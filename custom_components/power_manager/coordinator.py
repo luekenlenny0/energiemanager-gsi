@@ -504,7 +504,6 @@ class PowerManagerCoordinator(DataUpdateCoordinator[PowerManagerCoordinatorData]
                 min_kw=float(data.get(CONF_MIN_KW, DEFAULT_MIN_KW)),
                 max_kw=max_kw,
                 actual_kw=actual_kw,
-                actual_measurement_age_s=actual_age_s,
                 available=available,
                 can_modulate=(load_type != LOAD_TYPE_SWITCH),
                 can_shutdown=True,
@@ -538,6 +537,7 @@ class PowerManagerCoordinator(DataUpdateCoordinator[PowerManagerCoordinatorData]
                 load_type=load_type,
                 requested_kw=requested_kw,
                 actual_kw=actual_kw,
+                actual_measurement_age_s=actual_age_s,
                 available=available,
                 output_entity=(
                     str(data[CONF_OUTPUT_ENTITY]) if data.get(CONF_OUTPUT_ENTITY) else None
