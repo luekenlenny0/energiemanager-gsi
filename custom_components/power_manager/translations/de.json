@@ -241,6 +241,10 @@
         "evse_min_power_below_current_minimum": "Die EVSE-Mindestleistung liegt unter der Leistung des konfigurierten Mindeststroms.",
         "evse_max_power_above_current_maximum": "Die EVSE-Maximalleistung ist mit dem konfigurierten Maximalstrom nicht erreichbar.",
         "actual_timeout_must_be_positive": "Der Istleistungs-Timeout muss größer als 0 Sekunden sein."
+      },
+      "entry_type": "Regelbarer Verbraucher",
+      "initiate_flow": {
+        "user": "Regelbaren Verbraucher hinzufügen"
       }
     }
   },
@@ -378,14 +382,6 @@
         "modulating": "Modulierbare Leistung",
         "switch": "Schaltlast",
         "evse": "EVSE / Wallbox"
-      }
-    },
-    "output_unit": {
-      "options": {
-        "auto": "Automatisch aus Entity",
-        "W": "W",
-        "kW": "kW",
-        "MW": "MW"
       }
     }
   }
