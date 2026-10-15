@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+from contextlib import suppress
 import logging
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -14,6 +16,9 @@ if TYPE_CHECKING:
     type PowerManagerConfigEntry = ConfigEntry[PowerManagerCoordinator]
 
 _LOGGER = logging.getLogger(__name__)
+
+_FRONTEND_URL_BASE = "/power_manager_frontend"
+_FRONTEND_STATIC_REGISTERED = "frontend_static_registered"
 
 
 async def _async_update_listener(
@@ -31,9 +36,30 @@ async def async_setup_entry(
 ) -> bool:
     """Set up Power Manager from a config entry."""
 
+    from homeassistant.components import frontend
+    from homeassistant.components.http import StaticPathConfig
     from homeassistant.const import Platform
 
+    from .const import DOMAIN, VERSION
     from .coordinator import PowerManagerCoordinator
+
+    domain_data = hass.data.setdefault(DOMAIN, {})
+    frontend_dir = Path(__file__).parent / "frontend"
+    module_url = f"{_FRONTEND_URL_BASE}/power-manager-card.js?v={VERSION}"
+
+    if not domain_data.get(_FRONTEND_STATIC_REGISTERED):
+        await hass.http.async_register_static_paths(
+            [
+                StaticPathConfig(
+                    _FRONTEND_URL_BASE,
+                    str(frontend_dir),
+                    cache_headers=True,
+                )
+            ]
+        )
+        domain_data[_FRONTEND_STATIC_REGISTERED] = True
+
+    frontend.add_extra_js_url(hass, module_url)
 
     coordinator = PowerManagerCoordinator(hass=hass, config_entry=entry)
 
@@ -65,10 +91,19 @@ async def async_unload_entry(
 ) -> bool:
     """Unload Power Manager and best-effort put live outputs into safe state."""
 
+    from homeassistant.components import frontend
     from homeassistant.const import Platform
+
+    from .const import VERSION
 
     coordinator = entry.runtime_data
     await coordinator.async_shutdown()
+
+    with suppress(KeyError):
+        frontend.remove_extra_js_url(
+            hass,
+            f"{_FRONTEND_URL_BASE}/power-manager-card.js?v={VERSION}",
+        )
 
     return await hass.config_entries.async_unload_platforms(
         entry,
