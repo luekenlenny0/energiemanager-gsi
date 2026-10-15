@@ -2,11 +2,29 @@
 
 Power Manager ist eine generische Home-Assistant-Integration für ein zentrales Energiemanagement. Sie verbindet vorhandene Home-Assistant-Entities mit einem getesteten Reglerkern und kann damit Peakshaving, PV-Überschussbetrieb und priorisierte Verbrauchersteuerung abbilden.
 
-**Aktueller Stand: V3.0.7**
+**Aktueller Stand: V3.1.0**
 
-## Änderung in V3.0.7
+## Neu in V3.1.0: Power Manager Dashboard Card
 
-V3.0.7 ändert ausschließlich die Home-Assistant-Klassifizierung der Integration von `helper` auf `hub`. Dadurch wird Power Manager als zentrale Integration unter **Einstellungen → Geräte & Dienste → Integrationen** einsortiert. Die Regelstrategie aus V3.0.6 bleibt unverändert.
+V3.1.0 ergänzt die bestehende Integration um eine eigene Home-Assistant-Dashboard-Karte. Die Regellogik aus V3.0.7 bleibt unverändert.
+
+Die Karte wird zusammen mit der HACS-Integration installiert und von Power Manager automatisch als Frontend-Modul bereitgestellt. Sie erkennt die Power-Manager-Entities über die Home-Assistant-Entity-Registry und benötigt deshalb keine fest codierten Entity-IDs.
+
+Angezeigt werden unter anderem:
+
+- Betriebsart **Normal / Überschuss**
+- sichere Live-Regelungs-Freigabe
+- Netzleistung, PV-Leistung, Batterieleistung und Batterie-SOC
+- effektives PMAX und verbleibender Headroom
+- Basislast und verfügbares Regelbudget
+- Energieflussübersicht
+- alle konfigurierten regelbaren Verbraucher
+- je Verbraucher: Priorität, Istleistung, Sollleistung, Anforderung, Verfügbarkeit sowie Peak-/PV-Freigabe
+- aktive und begrenzte Verbraucher
+- Netzmessungsstatus, Messwertalter, Ausgangspfad und Fail-Safe
+
+Beim Aktivieren der Live-Regelung sowie bei einem Betriebsartwechsel während aktiver Live-Regelung fordert die Karte eine zusätzliche Bestätigung an.
+
 
 ## Grundprinzip
 
@@ -161,6 +179,24 @@ Nach dem Veröffentlichen auf GitHub:
 7. Unter **Einstellungen → Geräte & Dienste → Integration hinzufügen** den **Power Manager** einrichten.
 
 Vor dem ersten Push muss einmal `prepare_hacs_repo.py` ausgeführt werden, damit GitHub-Benutzername und Repository-URL korrekt in `manifest.json` eingetragen werden.
+
+## Dashboard Card verwenden
+
+Nach Installation bzw. Update auf V3.1.0 und einem vollständigen Home-Assistant-Neustart:
+
+1. Dashboard öffnen und **Bearbeiten** wählen.
+2. **Karte hinzufügen** wählen.
+3. Nach **Power Manager** suchen.
+4. Die Community-Karte **Power Manager** auswählen.
+5. Speichern.
+
+Alternativ kann sie im YAML-Modus mit folgendem Minimalblock verwendet werden:
+
+```yaml
+type: custom:power-manager-card
+```
+
+Die Karte benötigt keine manuelle Zuordnung der Power-Manager-Entities. Sie liest die zur Integration gehörenden Entities automatisch aus der Entity Registry.
 
 ## Installation
 
