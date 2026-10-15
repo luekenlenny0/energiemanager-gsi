@@ -13,7 +13,7 @@ def _json(relative: str):
 
 def test_manifest_and_runtime_version_match_v3():
     manifest = _json("manifest.json")
-    assert manifest["version"] == "3.0.3"
+    assert manifest["version"] == "3.0.4"
     assert VERSION == manifest["version"]
 
 
@@ -69,3 +69,11 @@ def test_generic_entity_selector_omits_none_domain_filter():
     assert 'config["domain"] = domain' in source
     assert '_optional_marker(CONF_OUTPUT_ENTITY, values): _entity_selector()' in source
     assert 'domain=["switch", "input_boolean"]' in source
+
+
+def test_coordinator_load_diagnostic_age_is_wired_to_diagnostic_not_core_model():
+    source = (COMPONENT / "coordinator.py").read_text(encoding="utf-8")
+    controllable_block = source[source.index("load = ControllableLoad("):source.index("loads.append(load)")]
+    diagnostic_block = source[source.index("diagnostics[subentry_id] = LoadDiagnostic("):source.index("return loads, diagnostics")]
+    assert "actual_measurement_age_s=" not in controllable_block
+    assert "actual_measurement_age_s=actual_age_s" in diagnostic_block
