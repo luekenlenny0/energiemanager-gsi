@@ -4,7 +4,7 @@
     "step": {
       "user": {
         "title": "Configure Power Manager",
-        "description": "Configure the grid connection and optional PV/battery measurements. Positive grid power means import; negative means export. PMAX always has highest priority.",
+        "description": "Configure the grid connection and optional PV/battery measurements. Positive grid power means import; negative means export. In surplus mode PV generation forms the controllable-load budget; PMAX always has highest priority.",
         "data": {
           "grid_power_entity": "Grid power sensor",
           "grid_limit_kw": "PMAX",
@@ -17,7 +17,7 @@
           "invert_battery_power": "Invert battery power sign",
           "battery_soc_entity": "Battery SOC sensor",
           "battery_soc_scale": "Battery SOC source scale",
-          "surplus_min_battery_soc": "Minimum battery SOC for surplus loads"
+          "surplus_min_battery_soc": "Battery reserve SOC for surplus mode"
         },
         "data_description": {
           "grid_power_entity": "Required. Net power measured at the grid connection point.",
@@ -31,7 +31,7 @@
           "invert_battery_power": "Enable if the source uses the opposite battery sign convention.",
           "battery_soc_entity": "Optional battery state-of-charge sensor.",
           "battery_soc_scale": "Use percent for 0..100 % sources, or fraction for unitless 0..1 sources.",
-          "surplus_min_battery_soc": "Optional. Below this SOC, surplus-controlled loads are blocked."
+          "surplus_min_battery_soc": "Optional. At or below this SOC, Power Manager automatically returns from Surplus to Normal."
         }
       }
     },
@@ -48,7 +48,7 @@
     "step": {
       "init": {
         "title": "Power Manager settings",
-        "description": "Change the global grid, PV and battery configuration. The integration reloads after saving.",
+        "description": "Change the global grid, PV and battery configuration. In surplus mode PV is allocated to surplus loads by priority; at the reserve SOC the mode automatically returns to Normal. The integration reloads after saving.",
         "data": {
           "grid_power_entity": "Grid power sensor",
           "grid_limit_kw": "PMAX",
@@ -61,7 +61,7 @@
           "invert_battery_power": "Invert battery power sign",
           "battery_soc_entity": "Battery SOC sensor",
           "battery_soc_scale": "Battery SOC source scale",
-          "surplus_min_battery_soc": "Minimum battery SOC for surplus loads"
+          "surplus_min_battery_soc": "Battery reserve SOC for surplus mode"
         },
         "data_description": {
           "grid_power_entity": "Required. Net power measured at the grid connection point.",
@@ -75,7 +75,7 @@
           "invert_battery_power": "Enable if the battery sign convention is reversed.",
           "battery_soc_entity": "Optional battery state-of-charge sensor.",
           "battery_soc_scale": "Percent = 0..100 %, fraction = unitless 0..1.",
-          "surplus_min_battery_soc": "Optional SOC gate for surplus-controlled loads."
+          "surplus_min_battery_soc": "Optional. At or below this SOC, Power Manager automatically returns from Surplus to Normal."
         }
       }
     },
@@ -284,10 +284,10 @@
         "name": "Peak-shaving budget"
       },
       "raw_surplus_budget": {
-        "name": "Raw surplus budget"
+        "name": "PV budget for surplus"
       },
       "surplus_budget": {
-        "name": "Surplus budget"
+        "name": "Approved surplus budget"
       },
       "available_budget": {
         "name": "Available load budget"
@@ -352,7 +352,7 @@
         "name": "Grid limit unachievable"
       },
       "battery_soc_blocking_surplus": {
-        "name": "Battery SOC blocking surplus"
+        "name": "Battery reserve blocking surplus"
       }
     },
     "select": {
