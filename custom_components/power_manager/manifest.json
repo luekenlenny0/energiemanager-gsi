@@ -6,7 +6,8 @@
   ],
   "config_flow": true,
   "dependencies": [
-    "frontend"
+    "frontend",
+    "http"
   ],
   "documentation": "https://github.com/ww118-rgb/power-manager",
   "integration_type": "hub",
