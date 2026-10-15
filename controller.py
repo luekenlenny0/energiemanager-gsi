@@ -660,10 +660,46 @@ def run_controller(
     # 3. Basislast
     # ------------------------------------------------------
 
-    base_load_kw = (
-        inputs.grid_kw
-        - controlled_power_for_calculation_kw
-    )
+    if (
+        inputs.mode
+        == OperatingMode.SURPLUS
+    ):
+        # Im Überschussbetrieb wird die aktuelle
+        # Batterieleistung aus der Basislast herausgerechnet.
+        #
+        # battery_kw:
+        #   positiv = Entladen
+        #   negativ = Laden
+        #
+        # Dadurch wird eine laufende Batterieladung NICHT als
+        # feste Last konserviert. Ebenso wird Batterieentladung
+        # für die PMAX-Projektion konservativ nicht vorausgesetzt.
+        #
+        # Ergebnis:
+        #   Basislast = Netz - geregelte Last + Batterie
+        #
+        # Beispiel:
+        #   Netz = 0 kW
+        #   geregelte Last = 4.5 kW
+        #   Batterie lädt mit -10 kW
+        #
+        #   Basislast = 0 - 4.5 - 10 = -14.5 kW
+        #
+        # Neue PV-Verbraucher können diese 14.5 kW aufnehmen,
+        # ohne dass die bisherige Batterieladung künstlich
+        # reserviert wird.
+        base_load_kw = (
+            inputs.grid_kw
+            - controlled_power_for_calculation_kw
+            + inputs.battery_kw
+        )
+
+    else:
+
+        base_load_kw = (
+            inputs.grid_kw
+            - controlled_power_for_calculation_kw
+        )
 
     # ------------------------------------------------------
     # 4. Effektives PMAX
@@ -730,23 +766,25 @@ def run_controller(
         == OperatingMode.SURPLUS
     ):
 
-        # Roh verfügbare Energie für die
-        # Überschussverbraucher.
+        # V3.0.6:
+        # Im Überschussbetrieb ist die aktuell gemessene
+        # PV-Erzeugung das Rohbudget für Überschussverbraucher.
         #
-        # Batterieentladung wird abgezogen,
-        # damit gespeicherte Energie nicht als
-        # PV-Überschuss interpretiert wird.
+        # Eine laufende Batterieladung wird NICHT reserviert:
+        # verfügbare Verbraucher dürfen die PV-Leistung gemäß
+        # Priorität aufnehmen. Batterieentladung erweitert das
+        # PV-Budget dagegen niemals.
+        #
+        # PMAX bleibt anschließend über peak_budget_kw hart.
         raw_surplus_budget_kw = max(
             0.0,
-            controlled_power_for_calculation_kw
-            - inputs.grid_kw
-            - battery_discharge_kw,
+            inputs.pv_kw,
         )
 
         battery_soc_blocking_surplus = bool(
             battery_soc_gate_enabled
             and inputs.battery_soc
-            < inputs.surplus_min_battery_soc
+            <= inputs.surplus_min_battery_soc
         )
 
         if (
