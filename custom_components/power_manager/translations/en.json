@@ -241,6 +241,10 @@
         "evse_min_power_below_current_minimum": "EVSE minimum power is below the power represented by the configured minimum current.",
         "evse_max_power_above_current_maximum": "EVSE maximum power cannot be reached with the configured maximum current.",
         "actual_timeout_must_be_positive": "The actual-power sensor timeout must be greater than 0 seconds."
+      },
+      "entry_type": "Controllable load",
+      "initiate_flow": {
+        "user": "Add controllable load"
       }
     }
   },
@@ -378,14 +382,6 @@
         "modulating": "Modulating power",
         "switch": "Switch load",
         "evse": "EVSE / wallbox"
-      }
-    },
-    "output_unit": {
-      "options": {
-        "auto": "Automatic from entity",
-        "W": "W",
-        "kW": "kW",
-        "MW": "MW"
       }
     }
   }
