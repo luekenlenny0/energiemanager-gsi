@@ -13,7 +13,7 @@ def _json(relative: str):
 
 def test_manifest_and_runtime_version_match_v3():
     manifest = _json("manifest.json")
-    assert manifest["version"] == "3.0.6"
+    assert manifest["version"] == "3.0.7"
     assert VERSION == manifest["version"]
 
 
@@ -97,3 +97,8 @@ def test_surplus_core_uses_pv_as_raw_budget():
     surplus_block = source[source.index("# V3.0.6:"):source.index("battery_soc_blocking_surplus", source.index("# V3.0.6:"))]
     assert "inputs.pv_kw" in surplus_block
     assert "controlled_power_for_calculation_kw\n            - inputs.grid_kw" not in surplus_block
+
+
+def test_manifest_classifies_power_manager_as_hub():
+    manifest = _json("manifest.json")
+    assert manifest["integration_type"] == "hub"
