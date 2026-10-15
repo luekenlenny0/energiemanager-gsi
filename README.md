@@ -2,7 +2,7 @@
 
 Power Manager ist eine generische Home-Assistant-Integration für ein zentrales Energiemanagement. Sie verbindet vorhandene Home-Assistant-Entities mit einem getesteten Reglerkern und kann damit Peakshaving, PV-Überschussbetrieb und priorisierte Verbrauchersteuerung abbilden.
 
-**Aktueller Stand: V3.0.5**
+**Aktueller Stand: V3.0.6**
 
 ## Grundprinzip
 
@@ -32,8 +32,8 @@ Dadurch bleibt die Regelstrategie unabhängig von einem bestimmten Hersteller, P
 - konfigurierbares PMAX und zusätzliche Netz-Sicherheitsreserve
 - positive Netzleistung = Bezug, negative Netzleistung = Einspeisung
 - Normalbetrieb mit Peakshaving
-- PV-Überschussbetrieb
-- optionaler Batterie-SOC-Schutz für Überschussverbraucher
+- PV-Überschussbetrieb mit PV-Leistung als priorisiertem Verbraucherbudget
+- Batterie-Reserve-SOC mit automatischer Rückkehr von Überschuss auf Normal
 - beliebig viele Verbraucher als Home-Assistant-Config-Subentries
 - Prioritäten; `1` ist die höchste Priorität
 - dynamische Mindest- und Maximalleistung
@@ -54,6 +54,16 @@ Dadurch bleibt die Regelstrategie unabhängig von einem bestimmten Hersteller, P
 - automatische Deaktivierung der Live-Regelung nach einem Fail-Safe oder Ausgangsfehler
 - Ausgangsbefehle werden nur bei tatsächlicher Wertänderung gesendet
 - Lastreduzierungen werden vor Laststeigerungen ausgeführt
+
+## Überschussbetrieb ab V3.0.6
+
+Im Modus **Überschuss** bildet die gemessene PV-Leistung das Rohbudget für die als Überschussverbraucher freigegebenen Lasten. Die Leistung wird anschließend nach den konfigurierten Prioritäten verteilt; `1` ist die höchste Priorität. Batterieentladung erweitert dieses PV-Budget nicht.
+
+Eine bereits laufende Batterieladung wird im Überschussbetrieb nicht mehr als zu erhaltende Last reserviert. Dadurch können priorisierte Verbraucher diese PV-Leistung übernehmen. Für die PMAX-Projektion wird die aktuell gemessene Batterieleistung im Überschussbetrieb aus der Basislast herausgerechnet, sodass weder eine laufende Ladung künstlich festgehalten noch eine aktuelle Entladung als dauerhafte PMAX-Stütze vorausgesetzt wird.
+
+Ist ein Batterie-Reserve-SOC konfiguriert, bleibt Überschuss nur aktiv, solange der SOC **oberhalb** dieser Grenze liegt. Bei Erreichen oder Unterschreiten der Grenze wechselt die Home-Assistant-Integration automatisch auf **Normal** zurück. Das ist kein Fail-Safe, sondern die konfigurierte Betriebsstrategie.
+
+Wichtig: V3.0.6 steuert keinen Batterie-Wechselrichter direkt. Sie reserviert im Überschussbetrieb keine Batterieladung und weist vorhandene PV-Leistung zuerst den freigegebenen Verbrauchern zu. Reicht deren Anforderung nicht aus, kann eine externe/automatische Batterieregelung verbleibende PV-Leistung weiterhin laden. Ein hartes Ladeverbot benötigt einen separat regelbaren Batterieaktor.
 
 ## Sicherheitsprinzip
 
