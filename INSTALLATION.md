@@ -1,4 +1,4 @@
-# Installation und Inbetriebnahme – Power Manager V3.0
+# Installation und Inbetriebnahme – Power Manager V3.1
 
 ## Installation über HACS Custom Repository
 
@@ -57,6 +57,8 @@ Die Installation muss anschließend mindestens diese Dateien enthalten:
 ├── sensor.py
 ├── strings.json
 ├── switch.py
+├── frontend/
+│   └── power-manager-card.js
 └── translations/
     ├── de.json
     └── en.json
@@ -172,6 +174,31 @@ Bei kritischem Messfehler oder Ausgangsfehler:
 - alte Zielwertschätzungen werden verworfen,
 - Diagnose-Entities zeigen Ursache und Ausgangszustand.
 
-## 8. Wichtiger Hinweis zur realen PMAX-Einhaltung
+## 8. Dashboard Card hinzufügen
+
+Seit V3.1.0 wird die Power-Manager-Dashboard-Karte zusammen mit der Integration installiert. Ein separates HACS-Frontend-Repository ist nicht erforderlich.
+
+Nach einem vollständigen Home-Assistant-Neustart:
+
+```text
+Dashboard
+→ Bearbeiten
+→ Karte hinzufügen
+→ Power Manager
+```
+
+Falls die Karte unmittelbar nach einem Update noch nicht im Card Picker sichtbar ist, die Browserseite einmal hart neu laden.
+
+Im YAML-Karteneditor kann die Karte auch direkt angelegt werden:
+
+```yaml
+type: custom:power-manager-card
+```
+
+Die Karte erkennt die Power-Manager-Entities automatisch. Sie zeigt globale Mess- und Diagnosewerte sowie für jeden konfigurierten Verbraucher Ist-, Soll- und Anforderungsleistung, Priorität und Freigabestatus.
+
+Die Live-Freigabe in der Karte bleibt sicherheitskritisch: Vor dem Einschalten erscheint eine zusätzliche Bestätigung.
+
+## 9. Wichtiger Hinweis zur realen PMAX-Einhaltung
 
 Der Regler kann keine physikalisch verzögerte oder fehlerhafte Geräteantwort verhindern. Für ernsthaftes Peakshaving sollten reale Istleistungswerte der geregelten Verbraucher vorhanden sein und die Zeitparameter passend zur Anlage gewählt werden. Vor einer realen Anlage zuerst Dry-Run und anschließend einen einzelnen Verbraucher unter kontrollierten Bedingungen testen.
