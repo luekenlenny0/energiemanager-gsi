@@ -356,9 +356,7 @@ def _build_load_schema(values: dict[str, Any] | None = None) -> probatio.Schema:
             ): BooleanSelector(),
             _optional_marker(CONF_REQUEST_ENTITY, values): _entity_selector(),
             _optional_marker(CONF_AVAILABILITY_ENTITY, values): _entity_selector(),
-            _optional_marker(CONF_OUTPUT_ENTITY, values): _entity_selector(
-                domain=["number", "input_number", "switch", "input_boolean"]
-            ),
+            _optional_marker(CONF_OUTPUT_ENTITY, values): _entity_selector(),
             _optional_marker(CONF_ENABLE_ENTITY, values): _entity_selector(
                 domain=["switch", "input_boolean"]
             ),
