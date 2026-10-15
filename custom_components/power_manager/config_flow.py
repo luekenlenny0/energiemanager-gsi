@@ -643,7 +643,7 @@ class PowerManagerLoadSubentryFlow(ConfigSubentryFlow):
             if not errors:
                 # The parent config entry update listener performs the reload.
                 return self.async_update_and_abort(
-                    self._get_reconfigure_entry(),
+                    self._get_entry(),
                     subentry,
                     data=normalized,
                     title=normalized[CONF_LOAD_NAME],
