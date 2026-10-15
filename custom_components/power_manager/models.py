@@ -110,8 +110,8 @@ class ControllerInputs:
 
     pv_kw:
         PV-Leistung.
-        Wird derzeit hauptsächlich für Diagnose
-        und spätere Strategien bereitgehalten.
+        Im Überschussbetrieb bildet sie das Rohbudget
+        für priorisierte Überschussverbraucher.
 
     battery_soc:
         Ladezustand 0...100 %.
@@ -122,14 +122,16 @@ class ControllerInputs:
         negativ = Batterie lädt
 
     surplus_min_battery_soc:
-        Optionaler Mindest-SOC für den
+        Optionaler Mindest-SOC / Reserve-SOC für den
         Überschussbetrieb.
 
-        None = SOC-Sperre deaktiviert.
+        None = SOC-Grenze deaktiviert.
 
-        Beispiel:
-        40.0 bedeutet:
-        Unter 40 % werden Überschussverbraucher gesperrt.
+        Im Home-Assistant-Adapter wird bei Erreichen
+        oder Unterschreiten dieser Grenze automatisch
+        auf NORMAL zurückgeschaltet. Der reine Kern
+        sperrt im SURPLUS-Modus bei <= Grenze ebenfalls
+        die Überschussfreigabe.
 
     now_s:
         Zeitwert in Sekunden.
