@@ -13,7 +13,7 @@ def _json(relative: str):
 
 def test_manifest_and_runtime_version_match_v3():
     manifest = _json("manifest.json")
-    assert manifest["version"] == "3.0.2"
+    assert manifest["version"] == "3.0.3"
     assert VERSION == manifest["version"]
 
 
@@ -67,5 +67,5 @@ def test_generic_entity_selector_omits_none_domain_filter():
     source = (COMPONENT / "config_flow.py").read_text(encoding="utf-8")
     assert 'if domain is not None:' in source
     assert 'config["domain"] = domain' in source
-    assert 'domain=["number", "input_number", "switch", "input_boolean"]' in source
+    assert '_optional_marker(CONF_OUTPUT_ENTITY, values): _entity_selector()' in source
     assert 'domain=["switch", "input_boolean"]' in source
