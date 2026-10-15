@@ -2,11 +2,11 @@
 
 Power Manager ist eine generische Home-Assistant-Integration für ein zentrales Energiemanagement. Sie verbindet vorhandene Home-Assistant-Entities mit einem getesteten Reglerkern und kann damit Peakshaving, PV-Überschussbetrieb und priorisierte Verbrauchersteuerung abbilden.
 
-**Aktueller Stand: V3.1.0**
+**Aktueller Stand: V3.1.1**
 
-## Neu in V3.1.0: Power Manager Dashboard Card
+## Neu in V3.1.1: responsive Power Manager Dashboard Card
 
-V3.1.0 ergänzt die bestehende Integration um eine eigene Home-Assistant-Dashboard-Karte. Die Regellogik aus V3.0.7 bleibt unverändert.
+V3.1.1 verbessert die in V3.1.0 eingeführte Home-Assistant-Dashboard-Karte. Das Layout richtet sich jetzt nach der tatsächlichen Kartenbreite statt nach der Browserbreite und bleibt damit auch in schmalen Sections lesbar. Zusätzlich werden Summenwerte bei Bedarf aus den Verbraucher-Sollwerten abgeleitet, falls ein globaler Aggregat-Sensor kurzfristig nicht verfügbar ist. Die Regellogik bleibt unverändert.
 
 Die Karte wird zusammen mit der HACS-Integration installiert und von Power Manager automatisch als Frontend-Modul bereitgestellt. Sie erkennt die Power-Manager-Entities über die Home-Assistant-Entity-Registry und benötigt deshalb keine fest codierten Entity-IDs.
 
