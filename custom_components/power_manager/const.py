@@ -1,0 +1,118 @@
+"""Constants for the Power Manager integration."""
+
+DOMAIN = "power_manager"
+NAME = "Power Manager"
+VERSION = "3.0.0"
+
+SUBENTRY_TYPE_LOAD = "load"
+
+# Global configuration.
+CONF_GRID_POWER_ENTITY = "grid_power_entity"
+CONF_GRID_LIMIT_KW = "grid_limit_kw"
+CONF_GRID_RESERVE_KW = "grid_reserve_kw"
+CONF_GRID_SENSOR_TIMEOUT_S = "grid_sensor_timeout_s"
+CONF_PV_POWER_ENTITY = "pv_power_entity"
+CONF_BATTERY_POWER_ENTITY = "battery_power_entity"
+CONF_BATTERY_SOC_ENTITY = "battery_soc_entity"
+CONF_BATTERY_SOC_SCALE = "battery_soc_scale"
+CONF_SURPLUS_MIN_BATTERY_SOC = "surplus_min_battery_soc"
+CONF_INVERT_GRID_POWER = "invert_grid_power"
+CONF_INVERT_PV_POWER = "invert_pv_power"
+CONF_INVERT_BATTERY_POWER = "invert_battery_power"
+
+# Load subentry configuration.
+CONF_LOAD_NAME = "load_name"
+CONF_LOAD_TYPE = "load_type"
+CONF_PRIORITY = "priority"
+CONF_MIN_KW = "min_kw"
+CONF_MAX_KW = "max_kw"
+CONF_DEFAULT_REQUEST_KW = "default_request_kw"
+CONF_ACTUAL_POWER_ENTITY = "actual_power_entity"
+CONF_INVERT_ACTUAL_POWER = "invert_actual_power"
+CONF_ACTUAL_SENSOR_TIMEOUT_S = "actual_sensor_timeout_s"
+CONF_REQUEST_ENTITY = "request_entity"
+CONF_AVAILABILITY_ENTITY = "availability_entity"
+CONF_OUTPUT_ENTITY = "output_entity"
+CONF_ENABLE_ENTITY = "enable_entity"
+CONF_OUTPUT_UNIT = "output_unit"
+CONF_SAFE_OUTPUT_VALUE = "safe_output_value"
+CONF_PEAK_SHAVING_ENABLED = "peak_shaving_enabled"
+CONF_SURPLUS_ENABLED = "surplus_enabled"
+CONF_START_MARGIN_KW = "start_margin_kw"
+CONF_STOP_MARGIN_KW = "stop_margin_kw"
+CONF_MIN_ON_TIME_S = "min_on_time_s"
+CONF_MIN_OFF_TIME_S = "min_off_time_s"
+CONF_SETTLING_TIME_S = "settling_time_s"
+
+# EVSE adapter configuration.
+CONF_EVSE_PHASES = "evse_phases"
+CONF_EVSE_VOLTAGE_V = "evse_voltage_v"
+CONF_EVSE_MIN_CURRENT_A = "evse_min_current_a"
+CONF_EVSE_MAX_CURRENT_A = "evse_max_current_a"
+CONF_EVSE_PAUSE_CURRENT_A = "evse_pause_current_a"
+
+LOAD_TYPE_MODULATING = "modulating"
+LOAD_TYPE_SWITCH = "switch"
+LOAD_TYPE_EVSE = "evse"
+LOAD_TYPES = (
+    LOAD_TYPE_MODULATING,
+    LOAD_TYPE_SWITCH,
+    LOAD_TYPE_EVSE,
+)
+
+OUTPUT_UNIT_AUTO = "auto"
+OUTPUT_UNIT_W = "W"
+OUTPUT_UNIT_KW = "kW"
+OUTPUT_UNIT_MW = "MW"
+OUTPUT_UNITS = (
+    OUTPUT_UNIT_AUTO,
+    OUTPUT_UNIT_W,
+    OUTPUT_UNIT_KW,
+    OUTPUT_UNIT_MW,
+)
+
+BATTERY_SOC_SCALE_PERCENT = "percent"
+BATTERY_SOC_SCALE_FRACTION = "fraction"
+BATTERY_SOC_SCALES = (
+    BATTERY_SOC_SCALE_PERCENT,
+    BATTERY_SOC_SCALE_FRACTION,
+)
+
+DEFAULT_GRID_RESERVE_KW = 0.0
+DEFAULT_GRID_SENSOR_TIMEOUT_S = 10.0
+DEFAULT_INVERT_GRID_POWER = False
+DEFAULT_INVERT_PV_POWER = False
+DEFAULT_INVERT_BATTERY_POWER = False
+DEFAULT_BATTERY_SOC_SCALE = BATTERY_SOC_SCALE_PERCENT
+
+DEFAULT_LOAD_TYPE = LOAD_TYPE_MODULATING
+DEFAULT_PRIORITY = 1
+DEFAULT_MIN_KW = 0.0
+DEFAULT_MAX_KW = 1.0
+DEFAULT_DEFAULT_REQUEST_KW = 0.0  # 0 means: use max_kw when no request entity exists.
+DEFAULT_INVERT_ACTUAL_POWER = False
+DEFAULT_ACTUAL_SENSOR_TIMEOUT_S = 10.0
+DEFAULT_PEAK_SHAVING_ENABLED = True
+DEFAULT_SURPLUS_ENABLED = True
+DEFAULT_START_MARGIN_KW = 0.0
+DEFAULT_STOP_MARGIN_KW = 0.0
+DEFAULT_MIN_ON_TIME_S = 0.0
+DEFAULT_MIN_OFF_TIME_S = 0.0
+DEFAULT_SETTLING_TIME_S = 0.0
+DEFAULT_OUTPUT_UNIT = OUTPUT_UNIT_AUTO
+DEFAULT_SAFE_OUTPUT_VALUE = 0.0
+
+DEFAULT_EVSE_PHASES = 3
+DEFAULT_EVSE_VOLTAGE_V = 230.0
+DEFAULT_EVSE_MIN_CURRENT_A = 6.0
+DEFAULT_EVSE_MAX_CURRENT_A = 16.0
+DEFAULT_EVSE_PAUSE_CURRENT_A = 0.01
+
+# Technical adapter timings, not installation-specific power values.
+HEARTBEAT_INTERVAL_SECONDS = 5.0
+REFRESH_DEBOUNCE_SECONDS = 0.25
+
+SUPPORTED_POWER_UNITS = ("mW", "W", "kW", "MW", "GW")
+SUPPORTED_OUTPUT_POWER_UNITS = ("W", "kW", "MW")
+SUPPORTED_NUMBER_DOMAINS = ("number", "input_number")
+SUPPORTED_SWITCH_DOMAINS = ("switch", "input_boolean")

@@ -1,0 +1,14 @@
+{
+  "domain": "power_manager",
+  "name": "Power Manager",
+  "version": "3.0.0",
+  "documentation": "https://github.com/ww118-rgb/power-manager",
+  "issue_tracker": "https://github.com/ww118-rgb/power-manager/issues",
+  "codeowners": [
+    "@ww118-rgb"
+  ],
+  "config_flow": true,
+  "single_config_entry": true,
+  "integration_type": "helper",
+  "requirements": []
+}
