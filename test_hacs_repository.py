@@ -9,6 +9,8 @@ def test_hacs_json_exists_and_renders_readme():
     data = json.loads((ROOT / "hacs.json").read_text(encoding="utf-8"))
     assert data["name"] == "Power Manager"
     assert data["render_readme"] is True
+    assert (ROOT / "LICENSE").is_file()
+    assert (COMPONENT / "brand" / "icon.png").is_file()
 
 
 def test_manifest_contains_hacs_required_metadata_keys():
@@ -22,6 +24,7 @@ def test_manifest_contains_hacs_required_metadata_keys():
         "version",
     ):
         assert key in manifest
+    assert manifest["iot_class"] == "calculated"
 
 
 def test_repository_contains_hacs_and_hassfest_workflow():
