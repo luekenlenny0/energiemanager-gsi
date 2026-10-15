@@ -6,10 +6,10 @@
   ],
   "config_flow": true,
   "documentation": "https://github.com/ww118-rgb/power-manager",
-  "integration_type": "helper",
+  "integration_type": "hub",
   "iot_class": "calculated",
   "issue_tracker": "https://github.com/ww118-rgb/power-manager/issues",
   "requirements": [],
   "single_config_entry": true,
-  "version": "3.0.6"
+  "version": "3.0.7"
 }
