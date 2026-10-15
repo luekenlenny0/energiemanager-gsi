@@ -778,6 +778,24 @@ class PowerManagerCoordinator(DataUpdateCoordinator[PowerManagerCoordinatorData]
             battery_soc = None
             surplus_min_battery_soc = None
 
+        # V3.0.6 battery reserve policy:
+        # SURPLUS is only active while the battery SOC is strictly above
+        # the configured reserve. At or below the reserve we immediately
+        # return to NORMAL. This is a mode transition, not a fail-safe.
+        if (
+            self.operating_mode == OperatingMode.SURPLUS
+            and surplus_min_battery_soc is not None
+            and battery_soc is not None
+            and battery_soc <= surplus_min_battery_soc
+        ):
+            _LOGGER.info(
+                "Batterie-SOC %.1f %% hat die Überschussreserve %.1f %% erreicht; "
+                "wechsle automatisch auf NORMAL.",
+                battery_soc,
+                surplus_min_battery_soc,
+            )
+            self.operating_mode = OperatingMode.NORMAL
+
         try:
             inputs = ControllerInputs(
                 grid_kw=grid_kw,
