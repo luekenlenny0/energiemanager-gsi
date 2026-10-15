@@ -23,6 +23,7 @@ from homeassistant.helpers.selector import (
     NumberSelector,
     NumberSelectorConfig,
     NumberSelectorMode,
+    SelectOptionDict,
     SelectSelector,
     SelectSelectorConfig,
 )
@@ -359,7 +360,9 @@ def _build_load_schema(values: dict[str, Any] | None = None) -> probatio.Schema:
             _optional_marker(CONF_OUTPUT_ENTITY, values): _entity_selector(),
             _optional_marker(CONF_ENABLE_ENTITY, values): _entity_selector(),
             _required_marker(CONF_OUTPUT_UNIT, values, DEFAULT_OUTPUT_UNIT): SelectSelector(
-                SelectSelectorConfig(options=list(OUTPUT_UNITS), translation_key=CONF_OUTPUT_UNIT)
+                SelectSelectorConfig(
+                    options=[SelectOptionDict(value=unit, label=unit) for unit in OUTPUT_UNITS]
+                )
             ),
             _required_marker(
                 CONF_SAFE_OUTPUT_VALUE,
