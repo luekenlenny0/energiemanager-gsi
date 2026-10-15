@@ -23,7 +23,18 @@ from .const import (
     CONF_BATTERY_POWER_ENTITY,
     CONF_BATTERY_SOC_ENTITY,
     CONF_LOAD_NAME,
+    CONF_LOAD_TYPE,
+    CONF_MAX_KW,
+    CONF_MIN_KW,
+    CONF_PEAK_SHAVING_ENABLED,
+    CONF_PRIORITY,
     CONF_PV_POWER_ENTITY,
+    CONF_SURPLUS_ENABLED,
+    DEFAULT_MAX_KW,
+    DEFAULT_MIN_KW,
+    DEFAULT_PEAK_SHAVING_ENABLED,
+    DEFAULT_PRIORITY,
+    DEFAULT_SURPLUS_ENABLED,
     DOMAIN,
     NAME,
     SUBENTRY_TYPE_LOAD,
@@ -320,6 +331,7 @@ class PowerManagerLoadTargetSensor(
 
         super().__init__(coordinator)
         self._subentry_id = subentry_id
+        self._entry = entry
         subentry = entry.subentries[subentry_id]
         load_name = str(subentry.data.get(CONF_LOAD_NAME, subentry.title))
         self._attr_unique_id = f"{entry.entry_id}_{subentry_id}_target_power"
@@ -351,7 +363,21 @@ class PowerManagerLoadTargetSensor(
         if load is None:
             return {}
 
+        subentry = self._entry.subentries[self._subentry_id]
+        data = subentry.data
+
         return {
+            "load_name": load.name,
+            "load_type": str(data.get(CONF_LOAD_TYPE, load.load_type)),
+            "priority": int(data.get(CONF_PRIORITY, DEFAULT_PRIORITY)),
+            "min_kw": float(data.get(CONF_MIN_KW, DEFAULT_MIN_KW)),
+            "max_kw": float(data.get(CONF_MAX_KW, DEFAULT_MAX_KW)),
+            "peak_shaving_enabled": bool(
+                data.get(CONF_PEAK_SHAVING_ENABLED, DEFAULT_PEAK_SHAVING_ENABLED)
+            ),
+            "surplus_enabled": bool(
+                data.get(CONF_SURPLUS_ENABLED, DEFAULT_SURPLUS_ENABLED)
+            ),
             "requested_kw": load.requested_kw,
             "actual_kw": load.actual_kw,
             "actual_measurement_age_s": load.actual_measurement_age_s,
