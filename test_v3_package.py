@@ -44,7 +44,7 @@ def test_selector_translations_cover_runtime_options():
     selectors = _json("strings.json")["selector"]
     assert set(selectors["load_type"]["options"]) == {"modulating", "switch", "evse"}
     assert set(selectors["battery_soc_scale"]["options"]) == {"percent", "fraction"}
-    assert set(selectors["output_unit"]["options"]) == {"auto", "W", "kW", "MW"}
+    assert "output_unit" not in selectors
 
 
 def test_component_has_no_exam_simulator_address_or_participant_topic_hardcoded():
