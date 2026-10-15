@@ -1250,7 +1250,56 @@ def test_uncontrollable_base_load_over_pmax_is_reported():
 # ============================================================
 
 
-def test_surplus_is_blocked_below_configured_battery_soc():
+def test_surplus_is_blocked_at_or_below_configured_battery_soc():
+    load = ControllableLoad(
+        name="Überschusslast",
+        priority=1,
+        requested_kw=20.0,
+        actual_kw=0.0,
+        min_kw=2.0,
+        max_kw=20.0,
+    )
+
+    for battery_soc in (39.9, 40.0):
+        result = run_controller(
+            inputs=ControllerInputs(
+                grid_kw=-12.0,
+                grid_limit_kw=100.0,
+                pv_kw=12.0,
+                battery_soc=battery_soc,
+                surplus_min_battery_soc=40.0,
+                mode=OperatingMode.SURPLUS,
+            ),
+            loads=[load],
+        )
+
+        assert (
+            result.raw_surplus_budget_kw
+            == pytest.approx(12.0)
+        )
+
+        assert (
+            result.surplus_budget_kw
+            == pytest.approx(0.0)
+        )
+
+        assert (
+            result.battery_soc_gate_enabled
+            is True
+        )
+
+        assert (
+            result.battery_soc_blocking_surplus
+            is True
+        )
+
+        assert (
+            result.targets_kw["Überschusslast"]
+            == pytest.approx(0.0)
+        )
+
+
+def test_surplus_is_allowed_above_configured_battery_soc():
     load = ControllableLoad(
         name="Überschusslast",
         priority=1,
@@ -1264,54 +1313,8 @@ def test_surplus_is_blocked_below_configured_battery_soc():
         inputs=ControllerInputs(
             grid_kw=-12.0,
             grid_limit_kw=100.0,
-            battery_soc=39.9,
-            surplus_min_battery_soc=40.0,
-            mode=OperatingMode.SURPLUS,
-        ),
-        loads=[load],
-    )
-
-    assert (
-        result.raw_surplus_budget_kw
-        == pytest.approx(12.0)
-    )
-
-    assert (
-        result.surplus_budget_kw
-        == pytest.approx(0.0)
-    )
-
-    assert (
-        result.battery_soc_gate_enabled
-        is True
-    )
-
-    assert (
-        result.battery_soc_blocking_surplus
-        is True
-    )
-
-    assert (
-        result.targets_kw["Überschusslast"]
-        == pytest.approx(0.0)
-    )
-
-
-def test_surplus_is_allowed_at_configured_battery_soc():
-    load = ControllableLoad(
-        name="Überschusslast",
-        priority=1,
-        requested_kw=20.0,
-        actual_kw=0.0,
-        min_kw=2.0,
-        max_kw=20.0,
-    )
-
-    result = run_controller(
-        inputs=ControllerInputs(
-            grid_kw=-12.0,
-            grid_limit_kw=100.0,
-            battery_soc=40.0,
+            pv_kw=12.0,
+            battery_soc=40.1,
             surplus_min_battery_soc=40.0,
             mode=OperatingMode.SURPLUS,
         ),
