@@ -13,7 +13,7 @@ def _json(relative: str):
 
 def test_manifest_and_runtime_version_match_v3():
     manifest = _json("manifest.json")
-    assert manifest["version"] == "3.0.5"
+    assert manifest["version"] == "3.0.6"
     assert VERSION == manifest["version"]
 
 
@@ -84,3 +84,16 @@ def test_load_reconfigure_uses_parent_entry_accessor():
     reconfigure_block = source[source.index("async def async_step_reconfigure"):source.index("return self.async_show_form", source.index("async def async_step_reconfigure"))]
     assert "self._get_entry()" in reconfigure_block
     assert "self._get_reconfigure_entry()" not in reconfigure_block
+
+
+def test_surplus_mode_auto_returns_to_normal_at_reserve_soc():
+    source = (COMPONENT / "coordinator.py").read_text(encoding="utf-8")
+    assert "battery_soc <= surplus_min_battery_soc" in source
+    assert "self.operating_mode = OperatingMode.NORMAL" in source
+
+
+def test_surplus_core_uses_pv_as_raw_budget():
+    source = (COMPONENT / "controller.py").read_text(encoding="utf-8")
+    surplus_block = source[source.index("# V3.0.6:"):source.index("battery_soc_blocking_surplus", source.index("# V3.0.6:"))]
+    assert "inputs.pv_kw" in surplus_block
+    assert "controlled_power_for_calculation_kw\n            - inputs.grid_kw" not in surplus_block
