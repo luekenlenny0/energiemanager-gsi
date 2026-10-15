@@ -2,7 +2,11 @@
 
 Power Manager ist eine generische Home-Assistant-Integration für ein zentrales Energiemanagement. Sie verbindet vorhandene Home-Assistant-Entities mit einem getesteten Reglerkern und kann damit Peakshaving, PV-Überschussbetrieb und priorisierte Verbrauchersteuerung abbilden.
 
-**Aktueller Stand: V3.0.6**
+**Aktueller Stand: V3.0.7**
+
+## Änderung in V3.0.7
+
+V3.0.7 ändert ausschließlich die Home-Assistant-Klassifizierung der Integration von `helper` auf `hub`. Dadurch wird Power Manager als zentrale Integration unter **Einstellungen → Geräte & Dienste → Integrationen** einsortiert. Die Regelstrategie aus V3.0.6 bleibt unverändert.
 
 ## Grundprinzip
 
@@ -63,7 +67,7 @@ Eine bereits laufende Batterieladung wird im Überschussbetrieb nicht mehr als z
 
 Ist ein Batterie-Reserve-SOC konfiguriert, bleibt Überschuss nur aktiv, solange der SOC **oberhalb** dieser Grenze liegt. Bei Erreichen oder Unterschreiten der Grenze wechselt die Home-Assistant-Integration automatisch auf **Normal** zurück. Das ist kein Fail-Safe, sondern die konfigurierte Betriebsstrategie.
 
-Wichtig: V3.0.6 steuert keinen Batterie-Wechselrichter direkt. Sie reserviert im Überschussbetrieb keine Batterieladung und weist vorhandene PV-Leistung zuerst den freigegebenen Verbrauchern zu. Reicht deren Anforderung nicht aus, kann eine externe/automatische Batterieregelung verbleibende PV-Leistung weiterhin laden. Ein hartes Ladeverbot benötigt einen separat regelbaren Batterieaktor.
+Wichtig: Seit V3.0.6 steuert Power Manager keinen Batterie-Wechselrichter direkt. Sie reserviert im Überschussbetrieb keine Batterieladung und weist vorhandene PV-Leistung zuerst den freigegebenen Verbrauchern zu. Reicht deren Anforderung nicht aus, kann eine externe/automatische Batterieregelung verbleibende PV-Leistung weiterhin laden. Ein hartes Ladeverbot benötigt einen separat regelbaren Batterieaktor.
 
 ## Sicherheitsprinzip
 
