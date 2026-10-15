@@ -4,7 +4,7 @@
     "step": {
       "user": {
         "title": "Power Manager konfigurieren",
-        "description": "Konfiguriert Netzanschlusspunkt sowie optionale PV- und Batteriemesswerte. Positive Netzleistung bedeutet Bezug, negative Einspeisung. PMAX hat immer höchste Priorität.",
+        "description": "Netzanschluss sowie optionale PV-/Batteriemessungen konfigurieren. Positive Netzleistung bedeutet Bezug, negative Einspeisung. Im Überschussbetrieb bildet die PV-Leistung das Verbraucherbudget; PMAX hat immer höchste Priorität.",
         "data": {
           "grid_power_entity": "Netzleistungssensor",
           "grid_limit_kw": "PMAX",
@@ -17,7 +17,7 @@
           "invert_battery_power": "Vorzeichen der Batterieleistung invertieren",
           "battery_soc_entity": "Batterie-SOC-Sensor",
           "battery_soc_scale": "Skalierung der SOC-Quelle",
-          "surplus_min_battery_soc": "Mindest-SOC für Überschussverbraucher"
+          "surplus_min_battery_soc": "Batterie-Reserve-SOC für Überschussbetrieb"
         },
         "data_description": {
           "grid_power_entity": "Pflichtfeld. Nettoleistung am Netzanschlusspunkt.",
@@ -31,7 +31,7 @@
           "invert_battery_power": "Aktivieren, wenn die Quelle die entgegengesetzte Batterie-Vorzeichenkonvention nutzt.",
           "battery_soc_entity": "Optionaler Batterie-SOC-Sensor.",
           "battery_soc_scale": "Prozent für Quellen 0..100 %, Anteil für einheitenlose Quellen 0..1.",
-          "surplus_min_battery_soc": "Optional. Unterhalb dieses SOC werden Überschussverbraucher gesperrt."
+          "surplus_min_battery_soc": "Optional. Bei Erreichen oder Unterschreiten dieses SOC wechselt Power Manager automatisch von Überschuss auf Normal."
         }
       }
     },
@@ -48,7 +48,7 @@
     "step": {
       "init": {
         "title": "Power-Manager-Einstellungen",
-        "description": "Ändert die globale Netz-, PV- und Batteriekonfiguration. Nach dem Speichern wird die Integration neu geladen.",
+        "description": "Globale Netz-, PV- und Batteriekonfiguration ändern. Im Überschussbetrieb wird PV nach Priorität an Überschussverbraucher verteilt; bei Reserve-SOC erfolgt automatisch die Rückkehr zu Normal. Die Integration wird nach dem Speichern neu geladen.",
         "data": {
           "grid_power_entity": "Netzleistungssensor",
           "grid_limit_kw": "PMAX",
@@ -61,7 +61,7 @@
           "invert_battery_power": "Vorzeichen der Batterieleistung invertieren",
           "battery_soc_entity": "Batterie-SOC-Sensor",
           "battery_soc_scale": "Skalierung der SOC-Quelle",
-          "surplus_min_battery_soc": "Mindest-SOC für Überschussverbraucher"
+          "surplus_min_battery_soc": "Batterie-Reserve-SOC für Überschussbetrieb"
         },
         "data_description": {
           "grid_power_entity": "Pflichtfeld. Nettoleistung am Netzanschlusspunkt.",
@@ -75,7 +75,7 @@
           "invert_battery_power": "Aktivieren, wenn die Quelle die entgegengesetzte Batterie-Vorzeichenkonvention nutzt.",
           "battery_soc_entity": "Optionaler Batterie-SOC-Sensor.",
           "battery_soc_scale": "Prozent für Quellen 0..100 %, Anteil für einheitenlose Quellen 0..1.",
-          "surplus_min_battery_soc": "Optional. Unterhalb dieses SOC werden Überschussverbraucher gesperrt."
+          "surplus_min_battery_soc": "Optional. Bei Erreichen oder Unterschreiten dieses SOC wechselt Power Manager automatisch von Überschuss auf Normal."
         }
       }
     },
@@ -284,10 +284,10 @@
         "name": "Peakshaving-Budget"
       },
       "raw_surplus_budget": {
-        "name": "Rohes Überschussbudget"
+        "name": "PV-Budget Überschuss"
       },
       "surplus_budget": {
-        "name": "Überschussbudget"
+        "name": "Freigegebenes Überschussbudget"
       },
       "available_budget": {
         "name": "Verfügbares Lastbudget"
@@ -352,7 +352,7 @@
         "name": "Netzgrenze nicht erreichbar"
       },
       "battery_soc_blocking_surplus": {
-        "name": "Batterie-SOC sperrt Überschuss"
+        "name": "Batterie-Reserve sperrt Überschuss"
       }
     },
     "select": {
