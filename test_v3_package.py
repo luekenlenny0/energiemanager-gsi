@@ -13,7 +13,7 @@ def _json(relative: str):
 
 def test_manifest_and_runtime_version_match_v3():
     manifest = _json("manifest.json")
-    assert manifest["version"] == "3.0.0"
+    assert manifest["version"] == "3.0.1"
     assert VERSION == manifest["version"]
 
 
@@ -61,3 +61,11 @@ def test_live_control_is_documented_as_a_runtime_safety_gate():
     strings = _json("strings.json")
     assert "live_control" in strings["entity"]["switch"]
     assert "fail_safe_active" in strings["entity"]["binary_sensor"]
+
+
+def test_generic_entity_selector_omits_none_domain_filter():
+    source = (COMPONENT / "config_flow.py").read_text(encoding="utf-8")
+    assert 'if domain is not None:' in source
+    assert 'config["domain"] = domain' in source
+    assert 'domain=["number", "input_number", "switch", "input_boolean"]' in source
+    assert 'domain=["switch", "input_boolean"]' in source
