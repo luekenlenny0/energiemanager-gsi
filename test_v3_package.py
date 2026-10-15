@@ -104,9 +104,9 @@ def test_manifest_classifies_power_manager_as_hub():
     assert manifest["integration_type"] == "hub"
 
 
-def test_manifest_declares_frontend_dependency():
+def test_manifest_declares_frontend_dependencies():
     manifest = _json("manifest.json")
-    assert "frontend" in manifest["dependencies"]
+    assert set(manifest["dependencies"]) == {"frontend", "http"}
 
 
 def test_dashboard_card_is_packaged_and_registered():
