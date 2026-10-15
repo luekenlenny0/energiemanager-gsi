@@ -13,7 +13,7 @@ def _json(relative: str):
 
 def test_manifest_and_runtime_version_match_v3():
     manifest = _json("manifest.json")
-    assert manifest["version"] == "3.1.0"
+    assert manifest["version"] == "3.1.1"
     assert VERSION == manifest["version"]
 
 
@@ -138,3 +138,10 @@ def test_load_target_sensor_exposes_dashboard_metadata():
         '"actual_kw"',
     ):
         assert attribute in source
+
+
+def test_dashboard_card_uses_container_responsive_layout():
+    source = (COMPONENT / "frontend" / "power-manager-card.js").read_text(encoding="utf-8")
+    assert "container-type:inline-size" in source
+    assert "@container (min-width:560px)" in source
+    assert "@container (min-width:820px)" in source
