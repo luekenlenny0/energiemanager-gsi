@@ -13,7 +13,7 @@ def _json(relative: str):
 
 def test_manifest_and_runtime_version_match_v3():
     manifest = _json("manifest.json")
-    assert manifest["version"] == "3.0.7"
+    assert manifest["version"] == "3.1.0"
     assert VERSION == manifest["version"]
 
 
@@ -102,3 +102,39 @@ def test_surplus_core_uses_pv_as_raw_budget():
 def test_manifest_classifies_power_manager_as_hub():
     manifest = _json("manifest.json")
     assert manifest["integration_type"] == "hub"
+
+
+def test_manifest_declares_frontend_dependency():
+    manifest = _json("manifest.json")
+    assert "frontend" in manifest["dependencies"]
+
+
+def test_dashboard_card_is_packaged_and_registered():
+    card = COMPONENT / "frontend" / "power-manager-card.js"
+    assert card.is_file()
+    source = card.read_text(encoding="utf-8")
+    assert 'customElements.define("power-manager-card"' in source
+    assert 'type: "power-manager-card"' in source
+    assert 'config/entity_registry/list' in source
+
+
+def test_backend_serves_and_loads_dashboard_card():
+    source = (COMPONENT / "__init__.py").read_text(encoding="utf-8")
+    assert "StaticPathConfig" in source
+    assert "frontend.add_extra_js_url" in source
+    assert "power-manager-card.js" in source
+
+
+def test_load_target_sensor_exposes_dashboard_metadata():
+    source = (COMPONENT / "sensor.py").read_text(encoding="utf-8")
+    for attribute in (
+        '"load_name"',
+        '"priority"',
+        '"min_kw"',
+        '"max_kw"',
+        '"peak_shaving_enabled"',
+        '"surplus_enabled"',
+        '"requested_kw"',
+        '"actual_kw"',
+    ):
+        assert attribute in source
