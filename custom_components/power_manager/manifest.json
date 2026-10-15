@@ -10,5 +10,6 @@
   "config_flow": true,
   "single_config_entry": true,
   "integration_type": "helper",
+  "iot_class": "calculated",
   "requirements": []
 }
