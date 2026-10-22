@@ -5,7 +5,9 @@ from __future__ import annotations
 from math import isfinite
 from typing import Any
 
-import probatio
+# HA 2026.8 provides voluptuous; HA 2026.9+ redirects this supported import
+# to its Probatio compatibility module during Home Assistant startup.
+import voluptuous as vol
 
 from homeassistant.config_entries import (
     ConfigEntry,
@@ -119,26 +121,26 @@ from .const import (
 from .load_config import normalize_load_data, validate_load_data
 
 
-def _optional_marker(key: str, values: dict[str, Any]) -> probatio.Optional:
+def _optional_marker(key: str, values: dict[str, Any]) -> vol.Optional:
     """Create optional marker with suggested existing value."""
 
     current_value = values.get(key)
     if current_value is not None and current_value != "":
-        return probatio.Optional(
+        return vol.Optional(
             key,
             description={"suggested_value": current_value},
         )
-    return probatio.Optional(key)
+    return vol.Optional(key)
 
 
 def _required_marker(
     key: str,
     values: dict[str, Any],
     default: Any,
-) -> probatio.Required:
+) -> vol.Required:
     """Create required marker using current value or a default."""
 
-    return probatio.Required(
+    return vol.Required(
         key,
         default=values.get(key, default),
     )
@@ -147,13 +149,13 @@ def _required_marker(
 def _required_entity_marker(
     key: str,
     values: dict[str, Any],
-) -> probatio.Required:
+) -> vol.Required:
     """Create a required entity marker without an invalid empty default."""
 
     current_value = values.get(key)
     if current_value:
-        return probatio.Required(key, default=current_value)
-    return probatio.Required(key)
+        return vol.Required(key, default=current_value)
+    return vol.Required(key)
 
 
 def _power_number_selector(*, minimum: float = 0.0) -> NumberSelector:
@@ -189,14 +191,14 @@ def _factor_selector() -> SelectSelector:
     ]))
 
 
-def _factor_marker(key: str, values: dict[str, Any]) -> probatio.Required:
+def _factor_marker(key: str, values: dict[str, Any]) -> vol.Required:
     try:
         factor = float(values.get(key, 1))
     except (TypeError, ValueError):
         factor = 1.0
     if factor not in INPUT_FACTORS:
         factor = 1.0
-    return probatio.Required(key, default=f"{factor:g}")
+    return vol.Required(key, default=f"{factor:g}")
 
 
 def _entity_selector(*, domain: str | list[str] | None = None) -> EntitySelector:
@@ -209,12 +211,12 @@ def _entity_selector(*, domain: str | list[str] | None = None) -> EntitySelector
     return EntitySelector(config)
 
 
-def _build_global_schema(values: dict[str, Any] | None = None) -> probatio.Schema:
+def _build_global_schema(values: dict[str, Any] | None = None) -> vol.Schema:
     """Build global configuration schema."""
 
     values = values or {}
 
-    return probatio.Schema(
+    return vol.Schema(
         {
             _required_entity_marker(CONF_GRID_POWER_ENTITY, values): _entity_selector(
                 domain=Platform.SENSOR
@@ -361,12 +363,12 @@ def _validate_global_configuration(user_input: dict[str, Any]) -> dict[str, str]
     return errors
 
 
-def _build_load_schema(values: dict[str, Any] | None = None) -> probatio.Schema:
+def _build_load_schema(values: dict[str, Any] | None = None) -> vol.Schema:
     """Build one complete load configuration form."""
 
     values = values or {}
 
-    return probatio.Schema(
+    return vol.Schema(
         {
             _required_marker(CONF_LOAD_NAME, values, "Verbraucher"): str,
             _required_marker(CONF_LOAD_TYPE, values, DEFAULT_LOAD_TYPE): SelectSelector(

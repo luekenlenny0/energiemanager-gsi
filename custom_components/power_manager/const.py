@@ -2,7 +2,7 @@
 
 DOMAIN = "power_manager"
 NAME = "Energiemanager GSI"
-VERSION = "3.3.0"
+VERSION = "3.3.1"
 
 SUBENTRY_TYPE_LOAD = "load"
 

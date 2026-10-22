@@ -4,7 +4,9 @@ Die neue Karte orientiert sich an einer Kreisgrafik: schwarzer Hintergrund, grü
 
 ## Update
 
-`custom_components/power_manager` aus dem ZIP nach `/config/custom_components/power_manager` kopieren und die bisherige Komponente vollständig ersetzen. Vorherige Konfiguration sichern, dann Home Assistant neu starten. Voraussetzung bleibt Home Assistant Core ab 2026.9.
+Patch **3.3.1** unterstützt Home Assistant **2026.8.3**. Er ersetzt den direkten Probatio-Import durch den versionskompatiblen Schema-Import. Die Tests prüfen globale Einrichtung, Verbraucheranlage und Bearbeitung mit Voluptuous sowie der Probatio-Kompatibilitätsschicht; sie ersetzen keinen vollständigen Home-Assistant-Gerätetest.
+
+`custom_components/power_manager` aus dem ZIP nach `/config/custom_components/power_manager` kopieren und die bisherige Komponente vollständig ersetzen. Vorherige Konfiguration sichern, dann Home Assistant neu starten. Voraussetzung bleibt Home Assistant Core ab 2026.8.3.
 
 Im Dashboard die Karte `custom:power-manager-card` verwenden und nach dem Update die Browserseite vollständig neu laden. Der visuelle Karteneditor bleibt verfügbar. Für die Seitenleiste neben der Grafik eine ausreichend breite Karte wählen; auf schmalen Karten stehen die Bedienelemente unter der Grafik.
 
