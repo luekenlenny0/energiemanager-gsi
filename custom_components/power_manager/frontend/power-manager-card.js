@@ -667,7 +667,7 @@ if (!window.customCards.some((card) => card.type === "power-manager-card")) {
     description:
       "Energiefluss, Ist-/Sollwerte, Betriebsart, Live-Regelung und Diagnose für die Energiemanager GSI-Integration.",
     preview: true,
-    documentationURL: "https://github.com/ww118-rgb/power-manager"
+    documentationURL: "https://github.com/luekenlenny0/energiemanager-gsi"
   });
 }
 
