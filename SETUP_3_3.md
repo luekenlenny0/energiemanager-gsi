@@ -1,4 +1,4 @@
-# Power Manager 3.3 – Energiefluss und Handsteuerung
+# Energiemanager GSI 3.3 – Energiefluss und Handsteuerung
 
 Die neue Karte orientiert sich an einer Kreisgrafik: schwarzer Hintergrund, grüne Ringe für PV und Speicher, gelbe Ringe für Netz und Verbraucher. Animierte Punkte zeigen die Leistungsrichtung. Die Kreise zeigen **Istwerte**, die Seitenleiste zusätzlich die **berechneten Sollwerte**.
 

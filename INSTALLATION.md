@@ -1,4 +1,4 @@
-# Installation und Inbetriebnahme – Power Manager V3.1
+# Installation und Inbetriebnahme – Energiemanager GSI V3.1
 
 ## Installation über HACS Custom Repository
 
@@ -13,7 +13,7 @@ HACS
 → Add
 ```
 
-Danach **Power Manager** in HACS installieren und Home Assistant vollständig neu starten.
+Danach **Energiemanager GSI** in HACS installieren und Home Assistant vollständig neu starten.
 
 Die Repository-Metadaten werden vor dem ersten Push mit `prepare_hacs_repo.py` gesetzt; Details stehen in `HACS_SETUP.md`.
 
@@ -64,7 +64,7 @@ Die Installation muss anschließend mindestens diese Dateien enthalten:
     └── en.json
 ```
 
-## 2. Power Manager hinzufügen
+## 2. Energiemanager GSI hinzufügen
 
 In Home Assistant:
 
@@ -72,7 +72,7 @@ In Home Assistant:
 Einstellungen
 → Geräte & Dienste
 → Integration hinzufügen
-→ Power Manager
+→ Energiemanager GSI
 ```
 
 Global werden mindestens konfiguriert:
@@ -93,7 +93,7 @@ Optional:
 
 ## 3. Verbraucher hinzufügen
 
-Am Power-Manager-Konfigurationseintrag werden Verbraucher als Untereinträge hinzugefügt.
+Am Energiemanager GSI-Konfigurationseintrag werden Verbraucher als Untereinträge hinzugefügt.
 
 Wichtige Felder:
 
@@ -162,7 +162,7 @@ Vor der Freigabe kontrollieren:
 - bei EVSE stimmen Phasen, Spannung und Stromgrenzen.
 - Netzsensor und Verbraucher-Istleistung aktualisieren sich zuverlässig.
 
-Dann **Live-Regelung** einschalten. Power Manager validiert die Ausgänge erneut, verwirft Dry-Run-Laufzeitschätzungen und beginnt mit einem frischen Live-Regelzustand.
+Dann **Live-Regelung** einschalten. Energiemanager GSI validiert die Ausgänge erneut, verwirft Dry-Run-Laufzeitschätzungen und beginnt mit einem frischen Live-Regelzustand.
 
 ## 7. Verhalten bei Fehlern
 
@@ -176,7 +176,7 @@ Bei kritischem Messfehler oder Ausgangsfehler:
 
 ## 8. Dashboard Card hinzufügen
 
-Seit V3.1.0 wird die Power-Manager-Dashboard-Karte zusammen mit der Integration installiert. Ein separates HACS-Frontend-Repository ist nicht erforderlich.
+Seit V3.1.0 wird die Energiemanager GSI-Dashboard-Karte zusammen mit der Integration installiert. Ein separates HACS-Frontend-Repository ist nicht erforderlich.
 
 Nach einem vollständigen Home-Assistant-Neustart:
 
@@ -184,7 +184,7 @@ Nach einem vollständigen Home-Assistant-Neustart:
 Dashboard
 → Bearbeiten
 → Karte hinzufügen
-→ Power Manager
+→ Energiemanager GSI
 ```
 
 Falls die Karte unmittelbar nach einem Update noch nicht im Card Picker sichtbar ist, die Browserseite einmal hart neu laden.
@@ -195,7 +195,7 @@ Im YAML-Karteneditor kann die Karte auch direkt angelegt werden:
 type: custom:power-manager-card
 ```
 
-Die Karte erkennt die Power-Manager-Entities automatisch. Sie zeigt globale Mess- und Diagnosewerte sowie für jeden konfigurierten Verbraucher Ist-, Soll- und Anforderungsleistung, Priorität und Freigabestatus.
+Die Karte erkennt die Energiemanager GSI-Entities automatisch. Sie zeigt globale Mess- und Diagnosewerte sowie für jeden konfigurierten Verbraucher Ist-, Soll- und Anforderungsleistung, Priorität und Freigabestatus.
 
 Die Live-Freigabe in der Karte bleibt sicherheitskritisch: Vor dem Einschalten erscheint eine zusätzliche Bestätigung.
 

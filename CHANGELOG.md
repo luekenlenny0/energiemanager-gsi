@@ -1,5 +1,9 @@
 # Changelog
 
+## Projektname: Energiemanager GSI
+
+HACS, Integration, Konfigurationsdialoge und Dashboard-Karte verwenden den neuen Namen. Bestehende Standard-Konfigurationseinträge werden beim Laden umbenannt; individuelle Titel bleiben erhalten. Technische Domain, Entity-Kennungen und Kartentyp bleiben kompatibel.
+
 ## 3.3.0
 
 - Radialer Energieflussmonitor mit Flussrichtung und grünen/gelben Geräteknoten.

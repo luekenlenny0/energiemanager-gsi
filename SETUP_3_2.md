@@ -1,4 +1,4 @@
-# Power Manager 3.2 – Einrichtung
+# Energiemanager GSI 3.2 – Einrichtung
 
 Diese Erweiterung ergänzt die vorhandene Integration um Skalierungsfaktoren, frei wählbare Gerätebefehle, A-/W-Ausgaben und einen anpassbaren Energieflussmonitor. Alle Sensoren und Verbraucher werden frei zugeordnet.
 
@@ -6,11 +6,11 @@ Diese Erweiterung ergänzt die vorhandene Integration um Skalierungsfaktoren, fr
 
 Voraussetzung: Home Assistant Core ab 2026.9 und vorhandene Mess-/Stell-Entities der Geräte.
 
-**Über HACS:** Das GitHub-Repository als benutzerdefiniertes Repository der Kategorie **Integration** hinzufügen. Für diese Version muss der neue Stand zuerst in den Hauptbranch übernommen oder als Release veröffentlicht sein. Danach Power Manager herunterladen und Home Assistant neu starten.
+**Über HACS:** Das GitHub-Repository als benutzerdefiniertes Repository der Kategorie **Integration** hinzufügen. Für diese Version muss der neue Stand zuerst in den Hauptbranch übernommen oder als Release veröffentlicht sein. Danach Energiemanager GSI herunterladen und Home Assistant neu starten.
 
 **Mit dem ZIP:** Den Ordner `custom_components/power_manager` aus `power-manager-3.2.0.zip` nach `/config/custom_components/power_manager` kopieren. Eine vorhandene Installation vorher sichern und den kompletten Komponentenordner ersetzen. Home Assistant anschließend neu starten.
 
-Unter **Einstellungen → Geräte & Dienste → Integration hinzufügen → Power Manager** den Netzleistungssensor auswählen. Positive Netzleistung bedeutet Bezug, negative Einspeisung. Bei umgekehrten Vorzeichen die Invertierung einschalten.
+Unter **Einstellungen → Geräte & Dienste → Integration hinzufügen → Energiemanager GSI** den Netzleistungssensor auswählen. Positive Netzleistung bedeutet Bezug, negative Einspeisung. Bei umgekehrten Vorzeichen die Invertierung einschalten.
 
 ## Peakshaving und Prioritäten
 
@@ -87,7 +87,7 @@ AN und AUS müssen verschieden und vom Gerät akzeptiert sein. Die Freigabewerte
 
 ## Energieflussmonitor anpassen
 
-Dashboard bearbeiten → Karte hinzufügen → **Power Manager**. Die Karte wird mit der Integration bereitgestellt.
+Dashboard bearbeiten → Karte hinzufügen → **Energiemanager GSI**. Die Karte wird mit der Integration bereitgestellt.
 
 Im visuellen Karteneditor lassen sich Titel, Anzeige in W/kW, PV-/Batterie-/Diagnosebereiche und die kompakte Ansicht ändern. Jeder Verbraucher kann einen Anzeigenamen und ein `mdi:`-Symbol erhalten oder ausgeblendet werden. Das Ausblenden ändert nur die Darstellung; der Verbraucher bleibt im Regler aktiv.
 

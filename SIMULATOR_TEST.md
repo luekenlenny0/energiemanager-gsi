@@ -1,6 +1,6 @@
-# Energiedaten-Simulator – Test mit Power Manager V3.0
+# Energiedaten-Simulator – Test mit Energiemanager GSI V3.0
 
-Dieses Dokument beschreibt den Testweg für den vorhandenen Energiedaten-Simulator, ohne Simulatorwerte in den Power-Manager-Code einzubauen.
+Dieses Dokument beschreibt den Testweg für den vorhandenen Energiedaten-Simulator, ohne Simulatorwerte in den Energiemanager GSI-Code einzubauen.
 
 ## Simulator-Schnittstelle
 
@@ -46,12 +46,12 @@ Batterieleistung:  + Entladen / - Laden
 Batterie-SOC:      0…1
 ```
 
-Für Power Manager wird beim SOC deshalb die Quellskalierung **Bruchteil 0…1** gewählt.
+Für Energiemanager GSI wird beim SOC deshalb die Quellskalierung **Bruchteil 0…1** gewählt.
 
 
-Da der Simulator Messwerte zyklisch auch bei unverändertem Zahlenwert sendet, sollten die verwendeten MQTT-Messsensoren in Home Assistant mit `force_update: true` angelegt werden. Sonst kann ein identischer Messwert älter wirken als der konfigurierte Power-Manager-Timeout und einen unnötigen Fail-Safe auslösen.
+Da der Simulator Messwerte zyklisch auch bei unverändertem Zahlenwert sendet, sollten die verwendeten MQTT-Messsensoren in Home Assistant mit `force_update: true` angelegt werden. Sonst kann ein identischer Messwert älter wirken als der konfigurierte Energiemanager GSI-Timeout und einen unnötigen Fail-Safe auslösen.
 
-Ab V3.0.6 gilt im Überschussbetrieb: Die gemessene PV-Leistung ist das Rohbudget für freigegebene Überschussverbraucher. Eine bestehende Batterieladung wird nicht reserviert; Batterieentladung erhöht das PV-Budget nicht. Bei Erreichen oder Unterschreiten des konfigurierten Batterie-Reserve-SOC wechselt Power Manager automatisch auf **Normal** zurück.
+Ab V3.0.6 gilt im Überschussbetrieb: Die gemessene PV-Leistung ist das Rohbudget für freigegebene Überschussverbraucher. Eine bestehende Batterieladung wird nicht reserviert; Batterieentladung erhöht das PV-Budget nicht. Bei Erreichen oder Unterschreiten des konfigurierten Batterie-Reserve-SOC wechselt Energiemanager GSI automatisch auf **Normal** zurück.
 
 ## Relevante Stelltopics
 
@@ -65,14 +65,14 @@ sim/t01/cmd/heater/enabled
 sim/t01/cmd/wallbox/1/set_kw
 ```
 
-Wichtig: Der MQTT-Befehl `wallbox/1/set_kw` erwartet im Simulator bereits **kW**. Wird dieser MQTT-Weg verwendet, wird die Wallbox in Power Manager als **modulierbarer Verbraucher mit kW-Ausgang** konfiguriert. Der Power-Manager-EVSE-Modus kW→A ist dagegen für eine Home-Assistant-Entity vorgesehen, die tatsächlich Ampere erwartet, zum Beispiel eine passend konfigurierte Modbus-`number`-Entity.
+Wichtig: Der MQTT-Befehl `wallbox/1/set_kw` erwartet im Simulator bereits **kW**. Wird dieser MQTT-Weg verwendet, wird die Wallbox in Energiemanager GSI als **modulierbarer Verbraucher mit kW-Ausgang** konfiguriert. Der Energiemanager GSI-EVSE-Modus kW→A ist dagegen für eine Home-Assistant-Entity vorgesehen, die tatsächlich Ampere erwartet, zum Beispiel eine passend konfigurierte Modbus-`number`-Entity.
 
 ## Empfohlener erster Test
 
 1. MQTT-Integration in Home Assistant mit dem Broker des Simulators verbinden.
 2. Unter `sim/t01/#` prüfen, ob Nachrichten ankommen.
 3. Aus Netz, PV, Batterie und SOC Home-Assistant-Entities bereitstellen.
-4. Power Manager installieren und nur die globalen Messwerte konfigurieren.
+4. Energiemanager GSI installieren und nur die globalen Messwerte konfigurieren.
 5. Dry-Run ohne Verbraucher prüfen.
 6. Einen einzigen Verbraucher mit Istleistungsmessung hinzufügen.
 7. Dry-Run-Zielwerte mit Simulatoranzeige vergleichen.
@@ -90,7 +90,7 @@ Sollwert:    number.*       → sim/t01/cmd/.../set_kw oder .../kw
 Freigabe:    switch.*       → sim/t01/cmd/.../enabled   (falls benötigt)
 ```
 
-Power Manager spricht anschließend nur mit diesen Home-Assistant-Entities. Die MQTT-Details bleiben außerhalb des Reglerkerns.
+Energiemanager GSI spricht anschließend nur mit diesen Home-Assistant-Entities. Die MQTT-Details bleiben außerhalb des Reglerkerns.
 
 ## Wallbox-Test
 
@@ -101,11 +101,11 @@ Istleistung: sim/t01/state/wallbox/1/p_kw
 Sollwert:    sim/t01/cmd/wallbox/1/set_kw
 ```
 
-→ Power-Manager-Typ **modulierbar**, Ausgangseinheit kW.
+→ Energiemanager GSI-Typ **modulierbar**, Ausgangseinheit kW.
 
 Über eine echte Strom-Sollwert-Entity in A:
 
-→ Power-Manager-Typ **EVSE**, mit konfigurierbaren Phasen, Spannung, Mindest-/Maximalstrom und Pausenstrom.
+→ Energiemanager GSI-Typ **EVSE**, mit konfigurierbaren Phasen, Spannung, Mindest-/Maximalstrom und Pausenstrom.
 
 ## Sicherheitsregel für den Test
 

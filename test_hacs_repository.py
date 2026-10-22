@@ -7,7 +7,7 @@ COMPONENT = ROOT / "custom_components" / "power_manager"
 
 def test_hacs_json_exists_and_renders_readme():
     data = json.loads((ROOT / "hacs.json").read_text(encoding="utf-8"))
-    assert data["name"] == "Power Manager"
+    assert data["name"] == "Energiemanager GSI"
     assert data["render_readme"] is True
     assert (ROOT / "LICENSE").is_file()
     assert (COMPONENT / "brand" / "icon.png").is_file()

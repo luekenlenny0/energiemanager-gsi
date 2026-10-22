@@ -53,7 +53,7 @@ python -m json.tool .\hacs.json > $null
 git init
 git branch -M main
 git add .
-git commit -m "Release Power Manager v3.0.0"
+git commit -m "Release Energiemanager GSI v3.0.0"
 git remote add origin https://github.com/ww118-rgb/power-manager.git
 git push -u origin main
 ```
@@ -82,7 +82,7 @@ HACS
 → Add
 ```
 
-Danach **Power Manager** in HACS installieren, Home Assistant neu starten und anschließend über **Einstellungen → Geräte & Dienste** hinzufügen.
+Danach **Energiemanager GSI** in HACS installieren, Home Assistant neu starten und anschließend über **Einstellungen → Geräte & Dienste** hinzufügen.
 
 ## Hinweis zu Home Assistant Brands
 
