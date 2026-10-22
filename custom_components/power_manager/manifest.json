@@ -1,19 +1,23 @@
 {
   "domain": "power_manager",
   "name": "Energiemanager GSI",
+  "after_dependencies": [
+    "mqtt"
+  ],
   "codeowners": [
     "@luekenlenny0"
   ],
   "config_flow": true,
   "dependencies": [
     "frontend",
-    "http"
+    "http",
+    "panel_custom"
   ],
   "documentation": "https://github.com/luekenlenny0/energiemanager-gsi",
   "integration_type": "hub",
-  "iot_class": "calculated",
+  "iot_class": "local_polling",
   "issue_tracker": "https://github.com/luekenlenny0/energiemanager-gsi/issues",
   "requirements": [],
   "single_config_entry": true,
-  "version": "3.3.1"
+  "version": "3.4.0"
 }

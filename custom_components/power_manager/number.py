@@ -14,6 +14,8 @@ PARALLEL_UPDATES = 0
 
 
 async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities: AddConfigEntryEntitiesCallback) -> None:
+    from .point_entity import add_point_entities
+    add_point_entities(entry, "number", async_add_entities)
     for subentry_id, subentry in entry.subentries.items():
         if subentry.subentry_type == SUBENTRY_TYPE_LOAD:
             async_add_entities([PowerManagerManualPower(entry.runtime_data, entry, subentry_id)], config_subentry_id=subentry_id)

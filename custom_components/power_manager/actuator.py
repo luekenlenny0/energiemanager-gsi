@@ -80,7 +80,12 @@ def _state_or_error(hass: HomeAssistant, entity_id: str, label: str) -> State:
     state = hass.states.get(entity_id)
     if state is None:
         raise ActuatorError(f"{label}: Entity '{entity_id}' wurde nicht gefunden.")
-    if state.state in (STATE_UNKNOWN, STATE_UNAVAILABLE):
+    if state.state == STATE_UNAVAILABLE or (
+        state.state == STATE_UNKNOWN and not (
+            state.attributes.get("power_manager_point") is True
+            and state.attributes.get("power_manager_write_only") is True
+        )
+    ):
         raise ActuatorError(f"{label}: Entity '{entity_id}' ist {state.state}.")
     return state
 

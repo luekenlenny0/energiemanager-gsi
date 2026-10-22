@@ -36,7 +36,7 @@ async def async_setup_entry(
 ) -> bool:
     """Set up Power Manager from a config entry."""
 
-    from homeassistant.components import frontend
+    from homeassistant.components import frontend, panel_custom
     from homeassistant.components.http import StaticPathConfig
     from homeassistant.const import Platform
 
@@ -65,6 +65,8 @@ async def async_setup_entry(
     frontend.add_extra_js_url(hass, module_url)
 
     coordinator = PowerManagerCoordinator(hass=hass, config_entry=entry)
+    from .direct_io import DirectIO
+    coordinator.direct_io = DirectIO(hass, entry)
 
     # Load the integration even if a critical source is currently unavailable.
     # The coordinator exposes that condition as fail-safe instead of preventing
@@ -85,6 +87,14 @@ async def async_setup_entry(
         ],
     )
 
+    await panel_custom.async_register_panel(
+        hass, frontend_url_path="energiemanager-gsi",
+        webcomponent_name="energiemanager-gsi-panel", sidebar_title=NAME,
+        sidebar_icon="mdi:home-lightning-bolt",
+        module_url=f"{_FRONTEND_URL_BASE}/energiemanager-gsi-panel.js?v={VERSION}",
+        config={"entry_id": entry.entry_id},
+    )
+    coordinator.direct_io.start()
     coordinator.async_start_tracking()
     return True
 
@@ -102,6 +112,8 @@ async def async_unload_entry(
 
     coordinator = entry.runtime_data
     await coordinator.async_shutdown()
+    await coordinator.direct_io.stop()
+    frontend.async_remove_panel(hass, "energiemanager-gsi")
 
     with suppress(KeyError):
         frontend.remove_extra_js_url(

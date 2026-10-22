@@ -23,6 +23,8 @@ async def async_setup_entry(
     """Set up live-control switch."""
 
     async_add_entities([PowerManagerLiveControlSwitch(entry.runtime_data, entry)])
+    from .point_entity import add_point_entities
+    add_point_entities(entry, "switch", async_add_entities)
 
 
 class PowerManagerLiveControlSwitch(
