@@ -1,9 +1,9 @@
 {
-  "title": "Power Manager",
+  "title": "Energiemanager GSI",
   "config": {
     "step": {
       "user": {
-        "title": "Power Manager konfigurieren",
+        "title": "Energiemanager GSI konfigurieren",
         "description": "Netzanschluss und optionale PV-/Batteriesensoren zuordnen. Positiv = Netzbezug, negativ = Einspeisung. Netzüberschuss erhält den übrigen Hausverbrauch und Batterieladung; PV-Budget verteilt die Erzeugung. PMAX begrenzt beide Strategien.",
         "data": {
           "grid_power_entity": "Netzleistungssensor",
@@ -63,7 +63,7 @@
   "options": {
     "step": {
       "init": {
-        "title": "Power-Manager-Einstellungen",
+        "title": "Energiemanager GSI-Einstellungen",
         "description": "Netzanschluss und optionale PV-/Batteriesensoren zuordnen. Positiv = Netzbezug, negativ = Einspeisung. Netzüberschuss erhält den übrigen Hausverbrauch und Batterieladung; PV-Budget verteilt die Erzeugung. PMAX begrenzt beide Strategien.",
         "data": {
           "grid_power_entity": "Netzleistungssensor",
@@ -196,7 +196,7 @@
         },
         "reconfigure": {
           "title": "Regelbaren Verbraucher ändern",
-          "description": "Ändert diesen Verbraucher. Beim Speichern wird Power Manager neu geladen; die Live-Regelung ist danach absichtlich wieder AUS.",
+          "description": "Ändert diesen Verbraucher. Beim Speichern wird Energiemanager GSI neu geladen; die Live-Regelung ist danach absichtlich wieder AUS.",
           "data": {
             "load_name": "Name",
             "load_type": "Verbrauchertyp",
