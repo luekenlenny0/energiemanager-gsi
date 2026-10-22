@@ -41,5 +41,7 @@ jobs:
         run: python -m compileall -q custom_components/power_manager
       - name: Check dashboard card JavaScript
         run: node --check custom_components/power_manager/frontend/power-manager-card.js
+      - name: Test dashboard card behavior
+        run: node --test test_frontend.cjs
       - name: Run tests
         run: python -m pytest -q
