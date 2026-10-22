@@ -1,4 +1,4 @@
-const POWER_MANAGER_CARD_VERSION = "3.3.1";
+const POWER_MANAGER_CARD_VERSION = "3.4.0";
 
 class PowerManagerCard extends HTMLElement {
   constructor() {
