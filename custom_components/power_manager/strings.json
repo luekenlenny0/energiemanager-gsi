@@ -1,9 +1,9 @@
 {
-  "title": "Power Manager",
+  "title": "Energiemanager GSI",
   "config": {
     "step": {
       "user": {
-        "title": "Configure Power Manager",
+        "title": "Configure Energiemanager GSI",
         "description": "Map the grid connection and optional PV/battery sensors. Positive grid power means import; negative means export. Net export preserves other household demand and battery charging; PV budget distributes generation. PMAX limits both strategies.",
         "data": {
           "grid_power_entity": "Grid power sensor",
@@ -63,7 +63,7 @@
   "options": {
     "step": {
       "init": {
-        "title": "Power Manager settings",
+        "title": "Energiemanager GSI settings",
         "description": "Map the grid connection and optional PV/battery sensors. Positive grid power means import; negative means export. Net export preserves other household demand and battery charging; PV budget distributes generation. PMAX limits both strategies.",
         "data": {
           "grid_power_entity": "Grid power sensor",
@@ -196,7 +196,7 @@
         },
         "reconfigure": {
           "title": "Reconfigure controllable load",
-          "description": "Change this load. Saving reloads Power Manager; live control is deliberately disarmed after the reload.",
+          "description": "Change this load. Saving reloads Energiemanager GSI; live control is deliberately disarmed after the reload.",
           "data": {
             "load_name": "Name",
             "load_type": "Load type",

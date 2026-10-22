@@ -1,7 +1,7 @@
-"""Constants for the Power Manager integration."""
+"""Constants for the Energiemanager GSI integration."""
 
 DOMAIN = "power_manager"
-NAME = "Power Manager"
+NAME = "Energiemanager GSI"
 VERSION = "3.3.0"
 
 SUBENTRY_TYPE_LOAD = "load"

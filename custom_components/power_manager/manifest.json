@@ -1,6 +1,6 @@
 {
   "domain": "power_manager",
-  "name": "Power Manager",
+  "name": "Energiemanager GSI",
   "codeowners": [
     "@ww118-rgb"
   ],
