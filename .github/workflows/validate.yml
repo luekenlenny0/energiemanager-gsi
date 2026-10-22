@@ -40,8 +40,10 @@ jobs:
       - name: Compile integration
         run: python -m compileall -q custom_components/power_manager
       - name: Check dashboard card JavaScript
-        run: node --check custom_components/power_manager/frontend/power-manager-card.js
+        run: |
+          node --check custom_components/power_manager/frontend/power-manager-card.js
+          node --check custom_components/power_manager/frontend/energiemanager-gsi-panel.js
       - name: Test dashboard card behavior
-        run: node --test test_frontend.cjs
+        run: node --test test_frontend.cjs test_panel.cjs
       - name: Run tests
         run: python -m pytest -q

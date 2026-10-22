@@ -74,12 +74,10 @@ assert isinstance(global_form["data_schema"], vol.Schema)
 global_data = global_form["data_schema"]({"grid_power_entity": "sensor.grid", "grid_limit_kw": 11})
 assert global_data["grid_power_factor"] == "1"
 assert global_data["surplus_strategy"] == "net_export"
-try:
-    global_form["data_schema"]({"grid_limit_kw": 11})
-except vol.Invalid:
-    pass
-else:
-    raise AssertionError("Missing grid meter must fail validation")
+missing_grid = global_form["data_schema"]({"grid_limit_kw": 11})
+assert asyncio.run(flow_module.PowerManagerConfigFlow().async_step_user(missing_grid))["errors"]["grid_power_entity"] == "grid_entity_required"
+bootstrap = {**missing_grid, "configure_points_first": True}
+assert asyncio.run(flow_module.PowerManagerConfigFlow().async_step_user(bootstrap))["type"] == "create_entry"
 created = asyncio.run(flow_module.PowerManagerConfigFlow().async_step_user(global_data))
 assert created["type"] == "create_entry"
 assert created["data"]["grid_power_factor"] == 1
@@ -101,7 +99,44 @@ reconfigure = asyncio.run(load_flow.async_step_reconfigure())
 assert isinstance(reconfigure["data_schema"], vol.Schema)
 updated = reconfigure["data_schema"]({**load_data, "max_kw": 2})
 assert asyncio.run(load_flow.async_step_reconfigure(updated))["data"]["max_kw"] == 2
-print(backend + ": global, add-load and reconfigure dialogs passed")
+point_class = flow_module.PowerManagerPointSubentryFlow
+point_flow = point_class()
+point_flow._get_entry = lambda: SimpleNamespace(subentries={})
+base = asyncio.run(point_flow.async_step_user())
+choice = base["data_schema"]({"name": "Wallbox Freigabe", "protocol": "mqtt", "kind": "switch"})
+form = asyncio.run(point_flow.async_step_user(choice))
+assert form["step_id"] == "mqtt"
+data = form["data_schema"]({"state_topic": "wb/state", "command_topic": "wb/set", "command_on": "12", "command_off": "14"})
+created = asyncio.run(point_flow.async_step_mqtt(data))
+assert created["type"] == "create_entry", created
+assert created["data"]["command_on"] == "12"
+subentry = SimpleNamespace(subentry_id="wb", data=created["data"], subentry_type="point")
+point_flow._get_reconfigure_subentry = lambda: subentry
+base = asyncio.run(point_flow.async_step_reconfigure())
+changed_kind = {**choice, "kind": "number"}
+assert asyncio.run(point_flow.async_step_reconfigure(changed_kind))["errors"]["base"] == "point_type_immutable"
+form = asyncio.run(point_flow.async_step_reconfigure(choice))
+updated_data = form["data_schema"]({"command_topic": "wb/new", "command_on": "12", "command_off": "14"})
+updated = asyncio.run(point_flow.async_step_mqtt(updated_data))
+assert updated["type"] == "abort", updated
+assert updated["data"]["state_topic"] == ""
+
+point_flow = point_class()
+point_flow._get_entry = lambda: SimpleNamespace(subentries={})
+form = asyncio.run(point_flow.async_step_user({"name": "Netzzähler", "protocol": "modbus", "kind": "sensor"}))
+data = form["data_schema"]({"host": "meter.local", "register_type": "input", "data_type": "int32", "address": 100})
+created = asyncio.run(point_flow.async_step_modbus(data))
+assert created["type"] == "create_entry", created
+assert created["data"]["device_id"] == 1
+invalid = asyncio.run(point_flow.async_step_modbus({**data, "address": 65535}))
+assert invalid["errors"]["base"] == "invalid_point"
+point_flow = point_class()
+form = asyncio.run(point_flow.async_step_user({"name": "Output 2", "protocol": "modbus", "kind": "number"}))
+other = {**created["data"], "name": "Output 1", "kind": "number", "register_type": "holding", "data_type": "float32", "address": 100}
+point_flow._get_entry = lambda: SimpleNamespace(subentries={"other": SimpleNamespace(subentry_type="point", data=other)})
+data = form["data_schema"]({"host": "meter.local", "data_type": "uint16", "address": 101})
+assert asyncio.run(point_flow.async_step_modbus(data))["errors"]["base"] == "invalid_point"
+print(backend + ": global, load and MQTT/Modbus create/reconfigure dialogs passed")
 '''
     result = subprocess.run(
         [sys.executable, "-c", script, backend],

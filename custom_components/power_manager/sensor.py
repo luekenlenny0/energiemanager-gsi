@@ -270,6 +270,8 @@ async def async_setup_entry(
     """Set up Power Manager sensors."""
 
     coordinator = entry.runtime_data
+    from .point_entity import add_point_entities
+    add_point_entities(entry, "sensor", async_add_entities)
 
     global_sensors = [
         PowerManagerSensor(coordinator, entry, description)

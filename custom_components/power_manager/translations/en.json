@@ -24,7 +24,8 @@
           "battery_soc_factor": "Battery SOC factor",
           "surplus_strategy": "Surplus strategy",
           "house_power_entity": "Optional total household meter",
-          "house_power_factor": "Household meter factor"
+          "house_power_factor": "Household meter factor",
+          "configure_points_first": "Create Modbus/MQTT points first (assign grid meter later)"
         },
         "data_description": {
           "grid_power_entity": "Required. Net power measured at the grid connection point.",
@@ -45,7 +46,8 @@
           "battery_soc_factor": "Raw state × factor, followed by the selected percent/fraction conversion. Result must be 0–100%.",
           "surplus_strategy": "Net export: controlled actual demand − grid import − battery discharge. PV budget retains the existing generation-based budget. Battery discharge can only be excluded when a battery power sensor is configured.",
           "house_power_entity": "Only for a meter of total household demand. Leave empty for an import/export grid meter: house = grid + PV + battery discharge (charging negative). Base demand = house − all consumers.",
-          "house_power_factor": "Raw state × factor before unit conversion."
+          "house_power_factor": "Raw state × factor before unit conversion.",
+          "configure_points_first": "Allows setup without a grid sensor. Control stays in fail-safe until a valid meter is assigned."
         }
       }
     },
@@ -57,7 +59,8 @@
       "soc_limit_requires_soc_entity": "A battery SOC sensor is required when a minimum battery SOC is configured.",
       "duplicate_entities": "The same entity cannot be used for multiple different global measurements.",
       "invalid_input_factor": "Select one of the supported factors.",
-      "invalid_surplus_strategy": "Unknown surplus strategy."
+      "invalid_surplus_strategy": "Unknown surplus strategy.",
+      "grid_entity_required": "Select a grid sensor or enable creating points first."
     }
   },
   "options": {
@@ -84,7 +87,8 @@
           "battery_soc_factor": "Battery SOC factor",
           "surplus_strategy": "Surplus strategy",
           "house_power_entity": "Optional total household meter",
-          "house_power_factor": "Household meter factor"
+          "house_power_factor": "Household meter factor",
+          "configure_points_first": "Create Modbus/MQTT points first (assign grid meter later)"
         },
         "data_description": {
           "grid_power_entity": "Required. Net power measured at the grid connection point.",
@@ -105,7 +109,8 @@
           "battery_soc_factor": "Raw state × factor, followed by the selected percent/fraction conversion. Result must be 0–100%.",
           "surplus_strategy": "Net export: controlled actual demand − grid import − battery discharge. PV budget retains the existing generation-based budget. Battery discharge can only be excluded when a battery power sensor is configured.",
           "house_power_entity": "Only for a meter of total household demand. Leave empty for an import/export grid meter: house = grid + PV + battery discharge (charging negative). Base demand = house − all consumers.",
-          "house_power_factor": "Raw state × factor before unit conversion."
+          "house_power_factor": "Raw state × factor before unit conversion.",
+          "configure_points_first": "Allows setup without a grid sensor. Control stays in fail-safe until a valid meter is assigned."
         }
       }
     },
@@ -117,7 +122,8 @@
       "soc_limit_requires_soc_entity": "A battery SOC sensor is required when a minimum battery SOC is configured.",
       "duplicate_entities": "The same entity cannot be used for multiple different global measurements.",
       "invalid_input_factor": "Select one of the supported factors.",
-      "invalid_surplus_strategy": "Unknown surplus strategy."
+      "invalid_surplus_strategy": "Unknown surplus strategy.",
+      "grid_entity_required": "Select a grid sensor or enable creating points first."
     }
   },
   "config_subentries": {
@@ -296,6 +302,82 @@
       "entry_type": "Controllable load",
       "initiate_flow": {
         "user": "Add controllable load"
+      }
+    },
+    "point": {
+      "title": "Measurement/control point",
+      "step": {
+        "user": {
+          "title": "Measurement/control point",
+          "description": "Creates a freely assignable HA entity. MQTT uses the broker configured in Home Assistant. sensor reads measurements, number writes setpoints, switch sends configurable ON/OFF values.",
+          "data": {
+            "name": "Name",
+            "protocol": "Connection: modbus = Modbus TCP, mqtt = HA broker",
+            "kind": "Entity: sensor = measurement, number = setpoint, switch = ON/OFF"
+          }
+        },
+        "reconfigure": {
+          "title": "Measurement/control point",
+          "description": "Creates a freely assignable HA entity. MQTT uses the broker configured in Home Assistant. sensor reads measurements, number writes setpoints, switch sends configurable ON/OFF values.",
+          "data": {
+            "name": "Name",
+            "protocol": "Connection: modbus = Modbus TCP, mqtt = HA broker",
+            "kind": "Entity: sensor = measurement, number = setpoint, switch = ON/OFF"
+          }
+        },
+        "mqtt": {
+          "title": "MQTT",
+          "description": "Concrete topics without +/#. Optional JSON path, e.g. data.power or values.0. Without a readback topic, state is assumed. Old retained measurements are ignored. {detail}",
+          "data": {
+            "state_timeout": "Measurement timeout (s)",
+            "unit": "Unit (W, kW, A, % or empty)",
+            "scale": "Register/payload factor",
+            "minimum": "Minimum setpoint",
+            "maximum": "Maximum setpoint",
+            "step": "Display step",
+            "command_on": "ON value / payload",
+            "command_off": "OFF value / payload",
+            "state_topic": "Measurement/readback topic",
+            "json_path": "JSON path (e.g. data.power)",
+            "qos": "MQTT QoS",
+            "command_topic": "Command topic",
+            "payload_template": "Command template containing {value}",
+            "retain": "Retain commands"
+          }
+        },
+        "modbus": {
+          "title": "Modbus TCP",
+          "description": "Zero-based addresses. holding/input: FC3/FC4, coil/discrete: FC1/FC2. big = normal, little = swapped. HA value = raw × factor; writes use the inverse. State timeout must cover polling + response timeout. Setup never writes. {detail}",
+          "data": {
+            "state_timeout": "Measurement timeout (s)",
+            "unit": "Unit (W, kW, A, % or empty)",
+            "scale": "Register/payload factor",
+            "minimum": "Minimum setpoint",
+            "maximum": "Maximum setpoint",
+            "step": "Display step",
+            "command_on": "ON value / payload",
+            "command_off": "OFF value / payload",
+            "host": "IP address or hostname",
+            "port": "TCP port",
+            "device_id": "Device address / Unit ID",
+            "address": "Register address (zero-based)",
+            "register_type": "Register area",
+            "data_type": "Data type",
+            "byte_order": "Byte order",
+            "word_order": "Word order",
+            "poll_interval": "Polling interval (s)",
+            "timeout": "Response timeout (s)",
+            "readback": "Read back output",
+            "write_function": "Write: single = FC6, multiple = FC16"
+          }
+        }
+      },
+      "error": {
+        "invalid_point": "Invalid point. Check the details and values above.",
+        "point_type_immutable": "To change protocol or entity kind, delete this point and add a new one."
+      },
+      "abort": {
+        "reconfigure_successful": "Point updated."
       }
     }
   },

@@ -24,7 +24,8 @@
           "battery_soc_factor": "Faktor Batterie-SOC",
           "surplus_strategy": "Überschussstrategie",
           "house_power_entity": "Optionaler Hausverbrauchszähler",
-          "house_power_factor": "Faktor Hausverbrauchszähler"
+          "house_power_factor": "Faktor Hausverbrauchszähler",
+          "configure_points_first": "Zuerst Modbus-/MQTT-Punkte anlegen (Zähler später zuordnen)"
         },
         "data_description": {
           "grid_power_entity": "Pflichtfeld. Nettoleistung am Netzanschlusspunkt.",
@@ -45,7 +46,8 @@
           "battery_soc_factor": "Rohwert × Faktor, danach die gewählte Prozent-/Anteil-Skalierung. Ergebnis muss 0–100 % sein.",
           "surplus_strategy": "Netzüberschuss: geregelte Istleistung − Netzbezug − Batterieentladung. PV-Budget: bisheriges Verhalten mit der PV-Erzeugung als Budget. Ohne Batteriesensor lässt sich Batterieentladung nicht herausrechnen.",
           "house_power_entity": "Nur für einen Zähler des gesamten Hausverbrauchs. Bei einem Netzbezug-/Einspeisezähler leer lassen: Haus = Netz + PV + Speicherentladung (Ladung negativ). Grundverbrauch = Haus − Summe aller Verbraucher.",
-          "house_power_factor": "Rohwert × Faktor vor der Einheitenumrechnung."
+          "house_power_factor": "Rohwert × Faktor vor der Einheitenumrechnung.",
+          "configure_points_first": "Erlaubt die Einrichtung ohne Netzsensor. Die Regelung bleibt bis zur gültigen Zählerzuordnung im Fail-safe."
         }
       }
     },
@@ -57,7 +59,8 @@
       "soc_limit_requires_soc_entity": "Für einen Mindest-SOC muss ein Batterie-SOC-Sensor ausgewählt werden.",
       "duplicate_entities": "Dieselbe Entity darf nicht für mehrere unterschiedliche globale Messwerte verwendet werden.",
       "invalid_input_factor": "Wähle einen der angebotenen Faktoren.",
-      "invalid_surplus_strategy": "Unbekannte Überschussstrategie."
+      "invalid_surplus_strategy": "Unbekannte Überschussstrategie.",
+      "grid_entity_required": "Netzsensor wählen oder zuerst Anschlusspunkte anlegen aktivieren."
     }
   },
   "options": {
@@ -84,7 +87,8 @@
           "battery_soc_factor": "Faktor Batterie-SOC",
           "surplus_strategy": "Überschussstrategie",
           "house_power_entity": "Optionaler Hausverbrauchszähler",
-          "house_power_factor": "Faktor Hausverbrauchszähler"
+          "house_power_factor": "Faktor Hausverbrauchszähler",
+          "configure_points_first": "Zuerst Modbus-/MQTT-Punkte anlegen (Zähler später zuordnen)"
         },
         "data_description": {
           "grid_power_entity": "Pflichtfeld. Nettoleistung am Netzanschlusspunkt.",
@@ -105,7 +109,8 @@
           "battery_soc_factor": "Rohwert × Faktor, danach die gewählte Prozent-/Anteil-Skalierung. Ergebnis muss 0–100 % sein.",
           "surplus_strategy": "Netzüberschuss: geregelte Istleistung − Netzbezug − Batterieentladung. PV-Budget: bisheriges Verhalten mit der PV-Erzeugung als Budget. Ohne Batteriesensor lässt sich Batterieentladung nicht herausrechnen.",
           "house_power_entity": "Nur für einen Zähler des gesamten Hausverbrauchs. Bei einem Netzbezug-/Einspeisezähler leer lassen: Haus = Netz + PV + Speicherentladung (Ladung negativ). Grundverbrauch = Haus − Summe aller Verbraucher.",
-          "house_power_factor": "Rohwert × Faktor vor der Einheitenumrechnung."
+          "house_power_factor": "Rohwert × Faktor vor der Einheitenumrechnung.",
+          "configure_points_first": "Erlaubt die Einrichtung ohne Netzsensor. Die Regelung bleibt bis zur gültigen Zählerzuordnung im Fail-safe."
         }
       }
     },
@@ -117,7 +122,8 @@
       "soc_limit_requires_soc_entity": "Für einen Mindest-SOC muss ein Batterie-SOC-Sensor ausgewählt werden.",
       "duplicate_entities": "Dieselbe Entity darf nicht für mehrere unterschiedliche globale Messwerte verwendet werden.",
       "invalid_input_factor": "Wähle einen der angebotenen Faktoren.",
-      "invalid_surplus_strategy": "Unbekannte Überschussstrategie."
+      "invalid_surplus_strategy": "Unbekannte Überschussstrategie.",
+      "grid_entity_required": "Netzsensor wählen oder zuerst Anschlusspunkte anlegen aktivieren."
     }
   },
   "config_subentries": {
@@ -296,6 +302,82 @@
       "entry_type": "Regelbarer Verbraucher",
       "initiate_flow": {
         "user": "Regelbaren Verbraucher hinzufügen"
+      }
+    },
+    "point": {
+      "title": "Mess-/Stellpunkt",
+      "step": {
+        "user": {
+          "title": "Mess-/Stellpunkt",
+          "description": "Erstellt eine frei zuordenbare HA-Entität. MQTT nutzt den in Home Assistant eingerichteten Broker. sensor liest Messwerte, number schreibt Sollwerte, switch sendet frei wählbare EIN/AUS-Werte.",
+          "data": {
+            "name": "Name",
+            "protocol": "Verbindung: modbus = Modbus TCP, mqtt = HA-Broker",
+            "kind": "Entität: sensor = Messwert, number = Sollwert, switch = EIN/AUS"
+          }
+        },
+        "reconfigure": {
+          "title": "Mess-/Stellpunkt",
+          "description": "Erstellt eine frei zuordenbare HA-Entität. MQTT nutzt den in Home Assistant eingerichteten Broker. sensor liest Messwerte, number schreibt Sollwerte, switch sendet frei wählbare EIN/AUS-Werte.",
+          "data": {
+            "name": "Name",
+            "protocol": "Verbindung: modbus = Modbus TCP, mqtt = HA-Broker",
+            "kind": "Entität: sensor = Messwert, number = Sollwert, switch = EIN/AUS"
+          }
+        },
+        "mqtt": {
+          "title": "MQTT",
+          "description": "Konkrete Topics ohne +/#. JSON-Pfad optional, z. B. data.power oder values.0. Ohne Rückmelde-Topic ist der Zustand nur angenommen. Alte Retain-Messwerte werden ignoriert. {detail}",
+          "data": {
+            "state_timeout": "Messwert-Timeout (s)",
+            "unit": "Einheit (W, kW, A, % oder leer)",
+            "scale": "Register-/Payload-Faktor",
+            "minimum": "Kleinster Sollwert",
+            "maximum": "Größter Sollwert",
+            "step": "Anzeigeschritt",
+            "command_on": "EIN-Wert / Payload",
+            "command_off": "AUS-Wert / Payload",
+            "state_topic": "Messwert-/Rückmelde-Topic",
+            "json_path": "JSON-Pfad (z. B. data.power)",
+            "qos": "MQTT QoS",
+            "command_topic": "Befehls-Topic",
+            "payload_template": "Befehlsvorlage mit {value}",
+            "retain": "Befehle als Retain senden"
+          }
+        },
+        "modbus": {
+          "title": "Modbus TCP",
+          "description": "Register sind 0-basiert. holding/input: FC3/FC4, coil/discrete: FC1/FC2. big = normal, little = vertauscht. Faktor: HA-Wert = Rohwert × Faktor; Schreiben umgekehrt. Timeout mindestens Abfrageintervall + Antwort-Timeout. Keine Schreibbefehle beim Einrichten. {detail}",
+          "data": {
+            "state_timeout": "Messwert-Timeout (s)",
+            "unit": "Einheit (W, kW, A, % oder leer)",
+            "scale": "Register-/Payload-Faktor",
+            "minimum": "Kleinster Sollwert",
+            "maximum": "Größter Sollwert",
+            "step": "Anzeigeschritt",
+            "command_on": "EIN-Wert / Payload",
+            "command_off": "AUS-Wert / Payload",
+            "host": "IP-Adresse oder Hostname",
+            "port": "TCP-Port",
+            "device_id": "Geräteadresse / Unit ID",
+            "address": "Registeradresse (0-basiert)",
+            "register_type": "Registerbereich",
+            "data_type": "Datentyp",
+            "byte_order": "Byte-Reihenfolge",
+            "word_order": "Wort-Reihenfolge",
+            "poll_interval": "Abfrageintervall (s)",
+            "timeout": "Antwort-Timeout (s)",
+            "readback": "Ausgang zurücklesen",
+            "write_function": "Schreiben: single = FC6, multiple = FC16"
+          }
+        }
+      },
+      "error": {
+        "invalid_point": "Ungültige Angaben. Prüfe die Hinweise und Werte oben.",
+        "point_type_immutable": "Zum Wechsel von Verbindung oder Entitätstyp diesen Punkt löschen und neu anlegen."
+      },
+      "abort": {
+        "reconfigure_successful": "Mess-/Stellpunkt aktualisiert."
       }
     }
   },

@@ -119,6 +119,8 @@ from .const import (
     SUBENTRY_TYPE_LOAD,
 )
 from .load_config import normalize_load_data, validate_load_data
+from .point_config import SUBENTRY_TYPE_POINT
+from .point_flow import PowerManagerPointSubentryFlow
 
 
 def _optional_marker(key: str, values: dict[str, Any]) -> vol.Optional:
@@ -218,9 +220,10 @@ def _build_global_schema(values: dict[str, Any] | None = None) -> vol.Schema:
 
     return vol.Schema(
         {
-            _required_entity_marker(CONF_GRID_POWER_ENTITY, values): _entity_selector(
+            _optional_marker(CONF_GRID_POWER_ENTITY, values): _entity_selector(
                 domain=Platform.SENSOR
             ),
+            _required_marker("configure_points_first", values, False): BooleanSelector(),
             _factor_marker(CONF_GRID_POWER_FACTOR, values): _factor_selector(),
             _optional_marker(CONF_HOUSE_POWER_ENTITY, values): _entity_selector(domain=Platform.SENSOR),
             _factor_marker(CONF_HOUSE_POWER_FACTOR, values): _factor_selector(),
@@ -298,6 +301,7 @@ def _normalize_global_configuration(user_input: dict[str, Any]) -> dict[str, Any
     """Return a complete global mapping so options can also clear old values."""
 
     normalized = dict(user_input)
+    normalized.setdefault(CONF_GRID_POWER_ENTITY, None)
     for key in (CONF_GRID_POWER_FACTOR, CONF_PV_POWER_FACTOR, CONF_BATTERY_POWER_FACTOR, CONF_BATTERY_SOC_FACTOR, CONF_HOUSE_POWER_FACTOR):
         normalized[key] = float(normalized.get(key, 1))
     for key in (
@@ -315,6 +319,8 @@ def _validate_global_configuration(user_input: dict[str, Any]) -> dict[str, str]
     """Validate global configuration."""
 
     errors: dict[str, str] = {}
+    if not user_input.get(CONF_GRID_POWER_ENTITY) and not user_input.get("configure_points_first"):
+        errors[CONF_GRID_POWER_ENTITY] = "grid_entity_required"
 
     try:
         grid_limit_kw = float(user_input[CONF_GRID_LIMIT_KW])
@@ -592,7 +598,8 @@ class PowerManagerConfigFlow(ConfigFlow, domain=DOMAIN):
     ) -> dict[str, type[ConfigSubentryFlow]]:
         """Return supported load subentry types."""
 
-        return {SUBENTRY_TYPE_LOAD: PowerManagerLoadSubentryFlow}
+        return {SUBENTRY_TYPE_LOAD: PowerManagerLoadSubentryFlow,
+                SUBENTRY_TYPE_POINT: PowerManagerPointSubentryFlow}
 
     @staticmethod
     @callback
