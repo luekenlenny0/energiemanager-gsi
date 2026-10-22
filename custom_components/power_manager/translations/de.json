@@ -4,7 +4,7 @@
     "step": {
       "user": {
         "title": "Power Manager konfigurieren",
-        "description": "Netzanschluss sowie optionale PV-/Batteriemessungen konfigurieren. Positive Netzleistung bedeutet Bezug, negative Einspeisung. Im Überschussbetrieb bildet die PV-Leistung das Verbraucherbudget; PMAX hat immer höchste Priorität.",
+        "description": "Netzanschluss und optionale PV-/Batteriesensoren zuordnen. Positiv = Netzbezug, negativ = Einspeisung. Netzüberschuss erhält den übrigen Hausverbrauch und Batterieladung; PV-Budget verteilt die Erzeugung. PMAX begrenzt beide Strategien.",
         "data": {
           "grid_power_entity": "Netzleistungssensor",
           "grid_limit_kw": "PMAX",
@@ -17,7 +17,14 @@
           "invert_battery_power": "Vorzeichen der Batterieleistung invertieren",
           "battery_soc_entity": "Batterie-SOC-Sensor",
           "battery_soc_scale": "Skalierung der SOC-Quelle",
-          "surplus_min_battery_soc": "Batterie-Reserve-SOC für Überschussbetrieb"
+          "surplus_min_battery_soc": "Batterie-Reserve-SOC für Überschussbetrieb",
+          "grid_power_factor": "Faktor Netzleistung",
+          "pv_power_factor": "Faktor PV-Leistung",
+          "battery_power_factor": "Faktor Batterieleistung",
+          "battery_soc_factor": "Faktor Batterie-SOC",
+          "surplus_strategy": "Überschussstrategie",
+          "house_power_entity": "Optionaler Hausverbrauchszähler",
+          "house_power_factor": "Faktor Hausverbrauchszähler"
         },
         "data_description": {
           "grid_power_entity": "Pflichtfeld. Nettoleistung am Netzanschlusspunkt.",
@@ -31,7 +38,14 @@
           "invert_battery_power": "Aktivieren, wenn die Quelle die entgegengesetzte Batterie-Vorzeichenkonvention nutzt.",
           "battery_soc_entity": "Optionaler Batterie-SOC-Sensor.",
           "battery_soc_scale": "Prozent für Quellen 0..100 %, Anteil für einheitenlose Quellen 0..1.",
-          "surplus_min_battery_soc": "Optional. Bei Erreichen oder Unterschreiten dieses SOC wechselt Power Manager automatisch von Überschuss auf Normal."
+          "surplus_min_battery_soc": "Bei Erreichen der Reserve sperrt Netzüberschuss die Verbraucher. Die bisherige PV-Budget-Strategie wechselt auf Normal.",
+          "grid_power_factor": "Rohwert × Faktor, danach Umrechnung der Sensor-Einheit. Beispiel: 5000 W × 0,1 = 500 W. Faktor 1 verändert nichts.",
+          "pv_power_factor": "Rohwert × Faktor, danach Umrechnung der Sensor-Einheit. Beispiel: 5000 W × 0,1 = 500 W. Faktor 1 verändert nichts.",
+          "battery_power_factor": "Rohwert × Faktor, danach Umrechnung der Sensor-Einheit. Beispiel: 5000 W × 0,1 = 500 W. Faktor 1 verändert nichts.",
+          "battery_soc_factor": "Rohwert × Faktor, danach die gewählte Prozent-/Anteil-Skalierung. Ergebnis muss 0–100 % sein.",
+          "surplus_strategy": "Netzüberschuss: geregelte Istleistung − Netzbezug − Batterieentladung. PV-Budget: bisheriges Verhalten mit der PV-Erzeugung als Budget. Ohne Batteriesensor lässt sich Batterieentladung nicht herausrechnen.",
+          "house_power_entity": "Nur für einen Zähler des gesamten Hausverbrauchs. Bei einem Netzbezug-/Einspeisezähler leer lassen: Haus = Netz + PV + Speicherentladung (Ladung negativ). Grundverbrauch = Haus − Summe aller Verbraucher.",
+          "house_power_factor": "Rohwert × Faktor vor der Einheitenumrechnung."
         }
       }
     },
@@ -41,14 +55,16 @@
       "reserve_must_be_below_grid_limit": "Die Sicherheitsreserve muss nichtnegativ und kleiner als PMAX sein.",
       "grid_timeout_must_be_positive": "Der Netzsensor-Timeout muss größer als 0 Sekunden sein.",
       "soc_limit_requires_soc_entity": "Für einen Mindest-SOC muss ein Batterie-SOC-Sensor ausgewählt werden.",
-      "duplicate_entities": "Dieselbe Entity darf nicht für mehrere unterschiedliche globale Messwerte verwendet werden."
+      "duplicate_entities": "Dieselbe Entity darf nicht für mehrere unterschiedliche globale Messwerte verwendet werden.",
+      "invalid_input_factor": "Wähle einen der angebotenen Faktoren.",
+      "invalid_surplus_strategy": "Unbekannte Überschussstrategie."
     }
   },
   "options": {
     "step": {
       "init": {
         "title": "Power-Manager-Einstellungen",
-        "description": "Globale Netz-, PV- und Batteriekonfiguration ändern. Im Überschussbetrieb wird PV nach Priorität an Überschussverbraucher verteilt; bei Reserve-SOC erfolgt automatisch die Rückkehr zu Normal. Die Integration wird nach dem Speichern neu geladen.",
+        "description": "Netzanschluss und optionale PV-/Batteriesensoren zuordnen. Positiv = Netzbezug, negativ = Einspeisung. Netzüberschuss erhält den übrigen Hausverbrauch und Batterieladung; PV-Budget verteilt die Erzeugung. PMAX begrenzt beide Strategien.",
         "data": {
           "grid_power_entity": "Netzleistungssensor",
           "grid_limit_kw": "PMAX",
@@ -61,7 +77,14 @@
           "invert_battery_power": "Vorzeichen der Batterieleistung invertieren",
           "battery_soc_entity": "Batterie-SOC-Sensor",
           "battery_soc_scale": "Skalierung der SOC-Quelle",
-          "surplus_min_battery_soc": "Batterie-Reserve-SOC für Überschussbetrieb"
+          "surplus_min_battery_soc": "Batterie-Reserve-SOC für Überschussbetrieb",
+          "grid_power_factor": "Faktor Netzleistung",
+          "pv_power_factor": "Faktor PV-Leistung",
+          "battery_power_factor": "Faktor Batterieleistung",
+          "battery_soc_factor": "Faktor Batterie-SOC",
+          "surplus_strategy": "Überschussstrategie",
+          "house_power_entity": "Optionaler Hausverbrauchszähler",
+          "house_power_factor": "Faktor Hausverbrauchszähler"
         },
         "data_description": {
           "grid_power_entity": "Pflichtfeld. Nettoleistung am Netzanschlusspunkt.",
@@ -75,7 +98,14 @@
           "invert_battery_power": "Aktivieren, wenn die Quelle die entgegengesetzte Batterie-Vorzeichenkonvention nutzt.",
           "battery_soc_entity": "Optionaler Batterie-SOC-Sensor.",
           "battery_soc_scale": "Prozent für Quellen 0..100 %, Anteil für einheitenlose Quellen 0..1.",
-          "surplus_min_battery_soc": "Optional. Bei Erreichen oder Unterschreiten dieses SOC wechselt Power Manager automatisch von Überschuss auf Normal."
+          "surplus_min_battery_soc": "Bei Erreichen der Reserve sperrt Netzüberschuss die Verbraucher. Die bisherige PV-Budget-Strategie wechselt auf Normal.",
+          "grid_power_factor": "Rohwert × Faktor, danach Umrechnung der Sensor-Einheit. Beispiel: 5000 W × 0,1 = 500 W. Faktor 1 verändert nichts.",
+          "pv_power_factor": "Rohwert × Faktor, danach Umrechnung der Sensor-Einheit. Beispiel: 5000 W × 0,1 = 500 W. Faktor 1 verändert nichts.",
+          "battery_power_factor": "Rohwert × Faktor, danach Umrechnung der Sensor-Einheit. Beispiel: 5000 W × 0,1 = 500 W. Faktor 1 verändert nichts.",
+          "battery_soc_factor": "Rohwert × Faktor, danach die gewählte Prozent-/Anteil-Skalierung. Ergebnis muss 0–100 % sein.",
+          "surplus_strategy": "Netzüberschuss: geregelte Istleistung − Netzbezug − Batterieentladung. PV-Budget: bisheriges Verhalten mit der PV-Erzeugung als Budget. Ohne Batteriesensor lässt sich Batterieentladung nicht herausrechnen.",
+          "house_power_entity": "Nur für einen Zähler des gesamten Hausverbrauchs. Bei einem Netzbezug-/Einspeisezähler leer lassen: Haus = Netz + PV + Speicherentladung (Ladung negativ). Grundverbrauch = Haus − Summe aller Verbraucher.",
+          "house_power_factor": "Rohwert × Faktor vor der Einheitenumrechnung."
         }
       }
     },
@@ -85,7 +115,9 @@
       "reserve_must_be_below_grid_limit": "Die Sicherheitsreserve muss nichtnegativ und kleiner als PMAX sein.",
       "grid_timeout_must_be_positive": "Der Netzsensor-Timeout muss größer als 0 Sekunden sein.",
       "soc_limit_requires_soc_entity": "Für einen Mindest-SOC muss ein Batterie-SOC-Sensor ausgewählt werden.",
-      "duplicate_entities": "Dieselbe Entity darf nicht für mehrere unterschiedliche globale Messwerte verwendet werden."
+      "duplicate_entities": "Dieselbe Entity darf nicht für mehrere unterschiedliche globale Messwerte verwendet werden.",
+      "invalid_input_factor": "Wähle einen der angebotenen Faktoren.",
+      "invalid_surplus_strategy": "Unbekannte Überschussstrategie."
     }
   },
   "config_subentries": {
@@ -118,11 +150,15 @@
             "min_on_time_s": "Mindest-Einschaltdauer",
             "min_off_time_s": "Mindest-Auszeit",
             "settling_time_s": "Einschwingzeit",
-            "evse_phases": "EVSE-Phasen",
-            "evse_voltage_v": "EVSE-Phasenspannung",
+            "evse_phases": "Phasen für A-Umrechnung",
+            "evse_voltage_v": "Phasenspannung für A-Umrechnung",
             "evse_min_current_a": "EVSE-Mindeststrom",
             "evse_max_current_a": "EVSE-Maximalstrom",
-            "evse_pause_current_a": "EVSE-Pausenstrom"
+            "evse_pause_current_a": "EVSE-Pausenstrom",
+            "actual_power_factor": "Faktor Istleistung",
+            "request_factor": "Faktor Anforderungsleistung",
+            "command_on": "Befehl für AN",
+            "command_off": "Befehl für AUS"
           },
           "data_description": {
             "load_name": "Eindeutiger Name des Verbrauchers im Regler.",
@@ -136,9 +172,9 @@
             "invert_actual_power": "Vorzeichen des Istleistungssensors invertieren.",
             "request_entity": "Optional. Leistungssensor fordert seinen kW-Wert an; Ein/Aus-Entity fordert bei Ein max_kw an.",
             "availability_entity": "Optionaler Ein/Aus-Zustand. unknown/unavailable sperrt den Verbraucher.",
-            "output_entity": "Modulierend/EVSE: number oder input_number. Schaltlast: switch oder input_boolean.",
-            "enable_entity": "Optionaler switch/input_boolean als zusätzliche physische Freigabe.",
-            "output_unit": "Für modulierende Lasten. Auto liest W/kW/MW aus der Ausgangs-Entity. Ohne Einheit explizit wählen.",
+            "output_entity": "Leistungs-Sollwert: number/input_number. Schaltlast oder separate Freigabe: switch, input_boolean, number, input_number, select oder input_select.",
+            "enable_entity": "Leistungs-Sollwert: number/input_number. Schaltlast oder separate Freigabe: switch, input_boolean, number, input_number, select oder input_select.",
+            "output_unit": "A oder W (auch kW/MW) frei wählen. Auto: Entity-Einheit, bei EVSE A. Ampere nutzt die unten konfigurierten Phasen und Spannung; P = Phasen × Spannung × I bei Leistungsfaktor 1.",
             "safe_output_value": "Numerischer Wert bei 0-kW-Sollwert. Meist 0. Liegt er außerhalb des Number-Bereichs, separate Freigabe konfigurieren.",
             "peak_shaving_enabled": "Verbraucher darf zur Einhaltung von PMAX reduziert werden.",
             "surplus_enabled": "Verbraucher darf im Überschussbetrieb PV-Überschuss erhalten.",
@@ -151,7 +187,11 @@
             "evse_voltage_v": "Außenleiter-gegen-Neutralleiter-Spannung für die kW→A-Umrechnung.",
             "evse_min_current_a": "Technischer Mindestladestrom.",
             "evse_max_current_a": "Maximaler Ladestrom.",
-            "evse_pause_current_a": "Stromwert für Pause/Aus. Muss unter dem technischen Mindeststrom liegen."
+            "evse_pause_current_a": "Stromwert für Pause/Aus. Muss unter dem technischen Mindeststrom liegen.",
+            "actual_power_factor": "Rohwert × Faktor, danach Umrechnung der Sensor-Einheit. Beispiel: 5000 W × 0,1 = 500 W. Faktor 1 verändert nichts.",
+            "request_factor": "Rohwert × Faktor, danach Umrechnung der Sensor-Einheit. Beispiel: 5000 W × 0,1 = 500 W. Faktor 1 verändert nichts. Boolesche Anforderungszustände werden nicht skaliert.",
+            "command_on": "Wert für numerische Schaltlast oder separate Freigabe, z. B. 12. Bei select/input_select exakt den Optionstext verwenden. switch/input_boolean nutzt turn_on/turn_off.",
+            "command_off": "Wert für numerische Schaltlast oder separate Freigabe, z. B. 14. Bei select/input_select exakt den Optionstext verwenden. switch/input_boolean nutzt turn_on/turn_off."
           }
         },
         "reconfigure": {
@@ -180,11 +220,15 @@
             "min_on_time_s": "Mindest-Einschaltdauer",
             "min_off_time_s": "Mindest-Auszeit",
             "settling_time_s": "Einschwingzeit",
-            "evse_phases": "EVSE-Phasen",
-            "evse_voltage_v": "EVSE-Phasenspannung",
+            "evse_phases": "Phasen für A-Umrechnung",
+            "evse_voltage_v": "Phasenspannung für A-Umrechnung",
             "evse_min_current_a": "EVSE-Mindeststrom",
             "evse_max_current_a": "EVSE-Maximalstrom",
-            "evse_pause_current_a": "EVSE-Pausenstrom"
+            "evse_pause_current_a": "EVSE-Pausenstrom",
+            "actual_power_factor": "Faktor Istleistung",
+            "request_factor": "Faktor Anforderungsleistung",
+            "command_on": "Befehl für AN",
+            "command_off": "Befehl für AUS"
           },
           "data_description": {
             "load_name": "Eindeutiger Name des Verbrauchers im Regler.",
@@ -198,9 +242,9 @@
             "invert_actual_power": "Vorzeichen des Istleistungssensors invertieren.",
             "request_entity": "Optional. Leistungssensor fordert seinen kW-Wert an; Ein/Aus-Entity fordert bei Ein max_kw an.",
             "availability_entity": "Optionaler Ein/Aus-Zustand. unknown/unavailable sperrt den Verbraucher.",
-            "output_entity": "Modulierend/EVSE: number oder input_number. Schaltlast: switch oder input_boolean.",
-            "enable_entity": "Optionaler switch/input_boolean als zusätzliche physische Freigabe.",
-            "output_unit": "Für modulierende Lasten. Auto liest W/kW/MW aus der Ausgangs-Entity. Ohne Einheit explizit wählen.",
+            "output_entity": "Leistungs-Sollwert: number/input_number. Schaltlast oder separate Freigabe: switch, input_boolean, number, input_number, select oder input_select.",
+            "enable_entity": "Leistungs-Sollwert: number/input_number. Schaltlast oder separate Freigabe: switch, input_boolean, number, input_number, select oder input_select.",
+            "output_unit": "A oder W (auch kW/MW) frei wählen. Auto: Entity-Einheit, bei EVSE A. Ampere nutzt die unten konfigurierten Phasen und Spannung; P = Phasen × Spannung × I bei Leistungsfaktor 1.",
             "safe_output_value": "Numerischer Wert bei 0-kW-Sollwert. Meist 0. Liegt er außerhalb des Number-Bereichs, separate Freigabe konfigurieren.",
             "peak_shaving_enabled": "Verbraucher darf zur Einhaltung von PMAX reduziert werden.",
             "surplus_enabled": "Verbraucher darf im Überschussbetrieb PV-Überschuss erhalten.",
@@ -213,7 +257,11 @@
             "evse_voltage_v": "Außenleiter-gegen-Neutralleiter-Spannung für die kW→A-Umrechnung.",
             "evse_min_current_a": "Technischer Mindestladestrom.",
             "evse_max_current_a": "Maximaler Ladestrom.",
-            "evse_pause_current_a": "Stromwert für Pause/Aus. Muss unter dem technischen Mindeststrom liegen."
+            "evse_pause_current_a": "Stromwert für Pause/Aus. Muss unter dem technischen Mindeststrom liegen.",
+            "actual_power_factor": "Rohwert × Faktor, danach Umrechnung der Sensor-Einheit. Beispiel: 5000 W × 0,1 = 500 W. Faktor 1 verändert nichts.",
+            "request_factor": "Rohwert × Faktor, danach Umrechnung der Sensor-Einheit. Beispiel: 5000 W × 0,1 = 500 W. Faktor 1 verändert nichts. Boolesche Anforderungszustände werden nicht skaliert.",
+            "command_on": "Wert für numerische Schaltlast oder separate Freigabe, z. B. 12. Bei select/input_select exakt den Optionstext verwenden. switch/input_boolean nutzt turn_on/turn_off.",
+            "command_off": "Wert für numerische Schaltlast oder separate Freigabe, z. B. 14. Bei select/input_select exakt den Optionstext verwenden. switch/input_boolean nutzt turn_on/turn_off."
           }
         }
       },
@@ -230,9 +278,9 @@
         "stop_margin_above_start_margin": "Die Stop-Marge darf nicht größer als die Start-Marge sein.",
         "time_must_be_nonnegative": "Zeitwerte dürfen nicht negativ sein.",
         "invalid_output_unit": "Nicht unterstützte Ausgangseinheit.",
-        "switch_output_required": "Eine Schaltlast benötigt einen switch- oder input_boolean-Ausgang.",
+        "switch_output_required": "Wähle switch, input_boolean, number, input_number, select oder input_select.",
         "number_output_required": "Eine modulierende Last bzw. EVSE benötigt einen number- oder input_number-Ausgang.",
-        "enable_switch_required": "Die separate Freigabe muss switch oder input_boolean sein.",
+        "enable_switch_required": "Wähle switch, input_boolean, number, input_number, select oder input_select.",
         "invalid_evse_phases": "EVSE-Phasen müssen 1, 2 oder 3 sein.",
         "must_be_positive": "Dieser Wert muss größer als 0 sein.",
         "invalid_current_range": "Ungültiger EVSE-Strombereich.",
@@ -240,7 +288,10 @@
         "safe_output_must_be_nonnegative": "Der sichere numerische Ausgangswert darf nicht negativ sein.",
         "evse_min_power_below_current_minimum": "Die EVSE-Mindestleistung liegt unter der Leistung des konfigurierten Mindeststroms.",
         "evse_max_power_above_current_maximum": "Die EVSE-Maximalleistung ist mit dem konfigurierten Maximalstrom nicht erreichbar.",
-        "actual_timeout_must_be_positive": "Der Istleistungs-Timeout muss größer als 0 Sekunden sein."
+        "actual_timeout_must_be_positive": "Der Istleistungs-Timeout muss größer als 0 Sekunden sein.",
+        "invalid_input_factor": "Wähle einen der angebotenen Faktoren.",
+        "invalid_commands": "AN/AUS müssen verschieden sein. Für numerische Ausgänge sind endliche Zahlen erforderlich.",
+        "duplicate_output_entity": "Dieser Ausgang ist bereits als Hauptausgang oder Freigabe vergeben."
       },
       "entry_type": "Regelbarer Verbraucher",
       "initiate_flow": {
@@ -327,6 +378,12 @@
       },
       "load_target_power": {
         "name": "Sollleistung"
+      },
+      "house_power": {
+        "name": "Hausverbrauch gesamt"
+      },
+      "house_base_power": {
+        "name": "Grundverbrauch"
       }
     },
     "binary_sensor": {
@@ -362,11 +419,24 @@
           "normal": "Normal",
           "surplus": "Überschuss"
         }
+      },
+      "manual_mode": {
+        "name": "Verbrauchersteuerung",
+        "state": {
+          "auto": "Automatik",
+          "manual": "Manuell EIN",
+          "off": "Manuell AUS"
+        }
       }
     },
     "switch": {
       "live_control": {
         "name": "Live-Regelung"
+      }
+    },
+    "number": {
+      "manual_power": {
+        "name": "Manueller kW-Sollwert"
       }
     }
   },
@@ -382,6 +452,12 @@
         "modulating": "Modulierbare Leistung",
         "switch": "Schaltlast",
         "evse": "EVSE / Wallbox"
+      }
+    },
+    "surplus_strategy": {
+      "options": {
+        "net_export": "Netzüberschuss (Hausverbrauch und Batterieladung erhalten)",
+        "pv_budget": "PV-Erzeugung verteilen (bisherige Strategie)"
       }
     }
   }
