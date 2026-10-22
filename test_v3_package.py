@@ -13,7 +13,7 @@ def _json(relative: str):
 
 def test_manifest_and_runtime_version_match_v3():
     manifest = _json("manifest.json")
-    assert manifest["version"] == "3.3.1"
+    assert manifest["version"] == "3.4.0"
     assert VERSION == manifest["version"]
 
 
@@ -106,7 +106,7 @@ def test_manifest_classifies_power_manager_as_hub():
 
 def test_manifest_declares_frontend_dependencies():
     manifest = _json("manifest.json")
-    assert set(manifest["dependencies"]) == {"frontend", "http"}
+    assert set(manifest["dependencies"]) == {"frontend", "http", "panel_custom"}
 
 
 def test_dashboard_card_is_packaged_and_registered():

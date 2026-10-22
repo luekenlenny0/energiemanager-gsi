@@ -24,7 +24,7 @@ def test_manifest_contains_hacs_required_metadata_keys():
         "version",
     ):
         assert key in manifest
-    assert manifest["iot_class"] == "calculated"
+    assert manifest["iot_class"] == "local_polling"
 
 
 def test_repository_contains_hacs_and_hassfest_workflow():

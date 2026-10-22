@@ -4,6 +4,16 @@
 
 HACS, Integration, Konfigurationsdialoge und Dashboard-Karte verwenden den neuen Namen. Bestehende Standard-Konfigurationseinträge werden beim Laden umbenannt; individuelle Titel bleiben erhalten. Technische Domain, Entity-Kennungen und Kartentyp bleiben kompatibel.
 
+## 3.4.0
+
+- Eigener HA-Seitenleisteneintrag mit Symbol, Energiefluss, manuellen Verbraucherreglern und Anschlussdiagnose.
+- Frei konfigurierbare Modbus-TCP- und MQTT-Mess-/Stellpunkte als Config-Subentries mit nativen Sensor-/Number-/Switch-Entitäten.
+- Modbus-Funktionen 1/2/3/4/5/6/16, geprüfte MBAP-/Antwortdaten, Datentypen, Endianness, Skalierung und explizite Fehler bei nicht darstellbaren Ganzzahlwerten.
+- MQTT über den vorhandenen HA-Broker; Topics, JSON-Pfad, Payload-Vorlage, QoS, Retain und eigene EIN/AUS-Werte.
+- Messwertalter, Verbindungsfehler, Bereinigung beim Entladen und keine automatischen Schreibwiederholungen auf Transportebene. Angenommene Ausgangszustände werden nach Neuverbindung verworfen.
+- Einrichtung ohne vorhandenen Zähler möglich, mit Fail-safe bis zur vollständigen Zuordnung.
+- Lokale Protokolltests und Konfigurationsprüfungen für HA-2026.8-/2026.9-Schema-Backends; keine Prüfung an realer Hardware.
+
 ## 3.3.1
 
 - Kompatibler Schema-Import für Home Assistant 2026.8.3 und die Probatio-Kompatibilitätsschicht neuerer Versionen.

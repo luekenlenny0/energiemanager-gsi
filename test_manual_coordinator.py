@@ -156,6 +156,9 @@ def test_entities_register_under_each_consumer_and_delegate_to_real_coordinator(
     modules = {
         "homeassistant.components": {},
         "homeassistant.components.number": {"NumberEntity": NumberEntity, "NumberMode": SimpleNamespace(BOX="box")},
+        "homeassistant.components.sensor": {"SensorEntity": type("SensorEntity", (), {}), "SensorDeviceClass": SimpleNamespace(POWER="power", CURRENT="current", VOLTAGE="voltage"), "SensorStateClass": SimpleNamespace(MEASUREMENT="measurement")},
+        "homeassistant.components.switch": {"SwitchEntity": type("SwitchEntity", (), {})},
+        "homeassistant.helpers.entity": {"Entity": type("Entity", (), {})},
         "homeassistant.components.select": {"SelectEntity": SelectEntity},
         "homeassistant.helpers.device_registry": {"DeviceInfo": lambda **kwargs: kwargs},
         "homeassistant.helpers.entity_platform": {"AddConfigEntryEntitiesCallback": object},
@@ -170,6 +173,7 @@ def test_entities_register_under_each_consumer_and_delegate_to_real_coordinator(
     number = importlib.import_module("custom_components.power_manager.number")
     select = importlib.import_module("custom_components.power_manager.select")
     records = []
+    instance.direct_io = SimpleNamespace(points={})
 
     def collect(entities, **kwargs):
         records.extend((entity, kwargs.get("config_subentry_id")) for entity in entities)

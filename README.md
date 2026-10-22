@@ -2,7 +2,17 @@
 
 Energiemanager GSI ist eine generische Home-Assistant-Integration für ein zentrales Energiemanagement. Sie verbindet vorhandene Home-Assistant-Entities mit einem getesteten Reglerkern und kann damit Peakshaving, PV-Überschussbetrieb und priorisierte Verbrauchersteuerung abbilden.
 
-**Aktueller Stand: V3.3.1 · Home Assistant ab 2026.8.3**
+**Aktueller Stand: V3.4.0 · Home Assistant ab 2026.8.3**
+
+## Neu in V3.4.0: direkte Anschlüsse und eigener Seitenleisteneintrag
+
+- **Energiemanager GSI** erscheint mit eigenem Symbol links in Home Assistant. Energiefluss und manuelle Verbrauchersteuerung sind direkt erreichbar.
+- Frei konfigurierbare **Modbus-TCP- und MQTT-Mess-/Stellpunkte** als Sensor-, Zahlen- und Schaltentitäten; anschließend Zähler, PV, Speicher und Verbrauchern zuordnen.
+- Modbus: IP/Port, Unit ID, 0-basierte Register, Datentyp, Byte-/Wortreihenfolge, Faktoren, Lese-/Schreibfunktion und Abfrageintervall.
+- MQTT: Home Assistants eingerichteter Broker, frei wählbare Topics, JSON-Pfad, Befehlsvorlage, QoS und EIN-/AUS-Payloads wie 12/14.
+- Verbindungsfehler und veraltete Messwerte werden sichtbar. Keine Gerätebefehle beim Anlegen oder Wiederverbinden; Live-Regelung startet weiterhin ausgeschaltet.
+
+Die [Einrichtung für V3.4](SETUP_3_4.md) beschreibt die Zuordnung und Beispiele. **Ansicht anpassen** speichert die Darstellung des eigenen Bereichs pro Benutzer im Browser.
 
 ## Korrektur in V3.3.1
 
@@ -54,7 +64,7 @@ Beim Aktivieren der Live-Regelung sowie bei einem Betriebsartwechsel während ak
 
 ## Grundprinzip
 
-Energiemanager GSI implementiert bewusst keine gerätespezifische MQTT-, Modbus- oder Herstellerkommunikation. Solche Integrationen stellen in Home Assistant Mess- und Stell-Entities bereit. Energiemanager GSI liest diese Entities, rechnet intern ausschließlich in kW und schreibt anschließend auf die konfigurierten Home-Assistant-Ausgänge.
+Energiemanager GSI kann vorhandene Home-Assistant-Entitäten und eigene, direkt konfigurierte MQTT-/Modbus-TCP-Punkte verwenden. Die Anschlusspunkte stellen ebenfalls normale Mess- und Stell-Entities bereit. Der Regler liest diese Entities, rechnet intern ausschließlich in kW und schreibt auf die zugeordneten Ausgänge. Gerätespezifische Register und Topics werden gemäß Herstellerdokumentation frei eingestellt.
 
 ```text
 Messgeräte / Geräte
@@ -239,7 +249,7 @@ Die Regelungs-, Konvertierungs-, Adapter- und Paketlogik wird mit `pytest` getes
 ```powershell
 python -m pip install pytest voluptuous==0.15.2 probatio==0.11.4
 pytest -v
-node --test test_frontend.cjs
+node --test test_frontend.cjs test_panel.cjs
 ```
 
 Der V3.0-Stand enthält außerdem Paritätstests zwischen dem Referenz-Reglerkern und der im Home-Assistant-Paket eingebetteten Version.
