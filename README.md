@@ -2,7 +2,11 @@
 
 Energiemanager GSI ist eine generische Home-Assistant-Integration für ein zentrales Energiemanagement. Sie verbindet vorhandene Home-Assistant-Entities mit einem getesteten Reglerkern und kann damit Peakshaving, PV-Überschussbetrieb und priorisierte Verbrauchersteuerung abbilden.
 
-**Aktueller Stand: V3.3.0 · Home Assistant ab 2026.9**
+**Aktueller Stand: V3.3.1 · Home Assistant ab 2026.8.3**
+
+## Korrektur in V3.3.1
+
+Installation ab Home Assistant 2026.8.3. Die Konfigurationsdialoge nutzen den kompatiblen Schema-Import sowohl für Voluptuous (2026.8) als auch für die Probatio-Kompatibilitätsschicht (ab 2026.9).
 
 ## Neu in V3.3.0: Kreisgrafik und manuelle Verbrauchersteuerung
 
@@ -233,6 +237,7 @@ Für den vorhandenen Energiedaten-Simulator siehe [SIMULATOR_TEST.md](SIMULATOR_
 Die Regelungs-, Konvertierungs-, Adapter- und Paketlogik wird mit `pytest` getestet. Die Karte hat zusätzlich Verhaltenstests ohne externe Node-Abhängigkeiten:
 
 ```powershell
+python -m pip install pytest voluptuous==0.15.2 probatio==0.11.4
 pytest -v
 node --test test_frontend.cjs
 ```

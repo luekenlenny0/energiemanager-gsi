@@ -4,6 +4,12 @@
 
 HACS, Integration, Konfigurationsdialoge und Dashboard-Karte verwenden den neuen Namen. Bestehende Standard-Konfigurationseinträge werden beim Laden umbenannt; individuelle Titel bleiben erhalten. Technische Domain, Entity-Kennungen und Kartentyp bleiben kompatibel.
 
+## 3.3.1
+
+- Kompatibler Schema-Import für Home Assistant 2026.8.3 und die Probatio-Kompatibilitätsschicht neuerer Versionen.
+- HACS-Mindestversion auf die geprüfte Core-Schnittstelle 2026.8.3 angepasst.
+- Regressionstests der Konfigurationsdialoge mit beiden echten Validierungsbibliotheken; HA-Selektoren und Flow-Basis bleiben Test-Doubles.
+
 ## 3.3.0
 
 - Radialer Energieflussmonitor mit Flussrichtung und grünen/gelben Geräteknoten.

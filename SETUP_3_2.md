@@ -4,7 +4,7 @@ Diese Erweiterung ergänzt die vorhandene Integration um Skalierungsfaktoren, fr
 
 ## Installation
 
-Voraussetzung: Home Assistant Core ab 2026.9 und vorhandene Mess-/Stell-Entities der Geräte.
+Voraussetzung: Home Assistant Core ab 2026.8.3 und vorhandene Mess-/Stell-Entities der Geräte.
 
 **Über HACS:** Das GitHub-Repository als benutzerdefiniertes Repository der Kategorie **Integration** hinzufügen. Für diese Version muss der neue Stand zuerst in den Hauptbranch übernommen oder als Release veröffentlicht sein. Danach Energiemanager GSI herunterladen und Home Assistant neu starten.
 
