@@ -363,7 +363,7 @@ class PowerManagerCard extends HTMLElement {
     if (
       !live &&
       !window.confirm(
-        "Live-Regelung aktivieren? Der Power Manager darf danach reale Ausgangswerte schreiben."
+        "Live-Regelung aktivieren? Der Energiemanager GSI darf danach reale Ausgangswerte schreiben."
       )
     ) {
       return;
@@ -559,7 +559,7 @@ class PowerManagerCard extends HTMLElement {
     const balanceError = balance?.attributes?.balance_error;
     const modeButtons = ["normal", "surplus"].map(option => `<button data-mode="${option}" class="${option === mode ? "selected" : ""}" ${this._actionBusy ? "disabled" : ""}>${option === "normal" ? "Peakshaving" : "Überschuss"}</button>`).join("");
     this.shadowRoot.innerHTML = `<style>${style}</style><ha-card><div class="wrap ${this._config.compact ? "compact" : ""}">
-      <div class="header"><div><h2>${this._esc(this._config.title || "Energiefluss")}</h2><div class="subtitle">POWER MANAGER · ${POWER_MANAGER_CARD_VERSION}</div></div><span class="badge ${failSafe ? "danger" : !live ? "dry" : ""}">${failSafe ? "Fail-Safe" : !healthy ? "Messwerte fehlen" : live ? "Live-Regelung" : "Dry-Run"}</span></div>
+      <div class="header"><div><h2>${this._esc(this._config.title || "Energiefluss")}</h2><div class="subtitle">ENERGIEMANAGER GSI · ${POWER_MANAGER_CARD_VERSION}</div></div><span class="badge ${failSafe ? "danger" : !live ? "dry" : ""}">${failSafe ? "Fail-Safe" : !healthy ? "Messwerte fehlen" : live ? "Live-Regelung" : "Dry-Run"}</span></div>
       <div class="toolbar">${modeButtons}<button data-live="true" ${this._actionBusy ? "disabled" : ""}>${live ? "Live ausschalten" : "Live aktivieren"}</button><span class="spacer"></span><span class="summary">Netzlimit <b>${this._flowValue(this._num("effective_grid_limit"))}</b></span></div>
       ${this._actionError ? `<div class="error" role="alert">${this._esc(this._actionError)}</div>` : ""}
       <div class="main-grid"><div class="diagram">${this._radialFlow(loads)}<div class="hub-status">Messwerte der Verbraucher · Punkte zeigen die Flussrichtung</div></div>
@@ -628,13 +628,13 @@ class PowerManagerCardEditor extends HTMLElement {
       row.append(text, input);
       parent.append(row);
     };
-    field(root, "Titel", "title", "text", this._config.title || "Power Manager");
+    field(root, "Titel", "title", "text", this._config.title || "Energiemanager GSI");
     field(root, "Anzeigeeinheit", "power_unit", "text", this._config.power_unit || "auto", ["auto", "kW", "W"]);
     for (const [key, label] of [["show_pv", "PV anzeigen"], ["show_battery", "Batterie anzeigen"], ["show_diagnostics", "Diagnose anzeigen"], ["compact", "Kompakte Darstellung"]]) {
       field(root, label, key, "checkbox", this._config[key] ?? key !== "compact");
     }
     const note = document.createElement("small");
-    note.textContent = "Diese Einstellungen ändern die Darstellung. Priorität, Leistung und Gerätebefehle stellst du unter Geräte & Dienste → Power Manager beim Verbraucher ein.";
+    note.textContent = "Diese Einstellungen ändern die Darstellung. Priorität, Leistung und Gerätebefehle stellst du unter Geräte & Dienste → Energiemanager GSI beim Verbraucher ein.";
     root.append(note);
     const states = Object.values(this._hass?.states || {}).filter(s => s.attributes?.load_name && s.attributes?.load_type);
     for (const state of states) {
@@ -663,9 +663,9 @@ window.customCards = window.customCards || [];
 if (!window.customCards.some((card) => card.type === "power-manager-card")) {
   window.customCards.push({
     type: "power-manager-card",
-    name: "Power Manager",
+    name: "Energiemanager GSI",
     description:
-      "Energiefluss, Ist-/Sollwerte, Betriebsart, Live-Regelung und Diagnose für die Power-Manager-Integration.",
+      "Energiefluss, Ist-/Sollwerte, Betriebsart, Live-Regelung und Diagnose für die Energiemanager GSI-Integration.",
     preview: true,
     documentationURL: "https://github.com/ww118-rgb/power-manager"
   });
