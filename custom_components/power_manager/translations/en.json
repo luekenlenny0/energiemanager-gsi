@@ -1,10 +1,10 @@
 {
-  "title": "Power Manager",
+  "title": "Energiemanager GSI",
   "config": {
     "step": {
       "user": {
-        "title": "Configure Power Manager",
-        "description": "Configure the grid connection and optional PV/battery measurements. Positive grid power means import; negative means export. In surplus mode PV generation forms the controllable-load budget; PMAX always has highest priority.",
+        "title": "Configure Energiemanager GSI",
+        "description": "Map the grid connection and optional PV/battery sensors. Positive grid power means import; negative means export. Net export preserves other household demand and battery charging; PV budget distributes generation. PMAX limits both strategies.",
         "data": {
           "grid_power_entity": "Grid power sensor",
           "grid_limit_kw": "PMAX",
@@ -17,7 +17,14 @@
           "invert_battery_power": "Invert battery power sign",
           "battery_soc_entity": "Battery SOC sensor",
           "battery_soc_scale": "Battery SOC source scale",
-          "surplus_min_battery_soc": "Battery reserve SOC for surplus mode"
+          "surplus_min_battery_soc": "Battery reserve SOC for surplus mode",
+          "grid_power_factor": "Grid power factor",
+          "pv_power_factor": "PV power factor",
+          "battery_power_factor": "Battery power factor",
+          "battery_soc_factor": "Battery SOC factor",
+          "surplus_strategy": "Surplus strategy",
+          "house_power_entity": "Optional total household meter",
+          "house_power_factor": "Household meter factor"
         },
         "data_description": {
           "grid_power_entity": "Required. Net power measured at the grid connection point.",
@@ -31,7 +38,14 @@
           "invert_battery_power": "Enable if the source uses the opposite battery sign convention.",
           "battery_soc_entity": "Optional battery state-of-charge sensor.",
           "battery_soc_scale": "Use percent for 0..100 % sources, or fraction for unitless 0..1 sources.",
-          "surplus_min_battery_soc": "Optional. At or below this SOC, Power Manager automatically returns from Surplus to Normal."
+          "surplus_min_battery_soc": "At the reserve threshold, net export blocks consumers. The existing PV budget strategy switches to Normal.",
+          "grid_power_factor": "Raw state × factor, then conversion of the sensor unit. Example: 5000 W × 0.1 = 500 W. Factor 1 leaves the value unchanged.",
+          "pv_power_factor": "Raw state × factor, then conversion of the sensor unit. Example: 5000 W × 0.1 = 500 W. Factor 1 leaves the value unchanged.",
+          "battery_power_factor": "Raw state × factor, then conversion of the sensor unit. Example: 5000 W × 0.1 = 500 W. Factor 1 leaves the value unchanged.",
+          "battery_soc_factor": "Raw state × factor, followed by the selected percent/fraction conversion. Result must be 0–100%.",
+          "surplus_strategy": "Net export: controlled actual demand − grid import − battery discharge. PV budget retains the existing generation-based budget. Battery discharge can only be excluded when a battery power sensor is configured.",
+          "house_power_entity": "Only for a meter of total household demand. Leave empty for an import/export grid meter: house = grid + PV + battery discharge (charging negative). Base demand = house − all consumers.",
+          "house_power_factor": "Raw state × factor before unit conversion."
         }
       }
     },
@@ -41,14 +55,16 @@
       "reserve_must_be_below_grid_limit": "The grid safety reserve must be non-negative and lower than PMAX.",
       "grid_timeout_must_be_positive": "The grid sensor timeout must be greater than 0 seconds.",
       "soc_limit_requires_soc_entity": "A battery SOC sensor is required when a minimum battery SOC is configured.",
-      "duplicate_entities": "The same entity cannot be used for multiple different global measurements."
+      "duplicate_entities": "The same entity cannot be used for multiple different global measurements.",
+      "invalid_input_factor": "Select one of the supported factors.",
+      "invalid_surplus_strategy": "Unknown surplus strategy."
     }
   },
   "options": {
     "step": {
       "init": {
-        "title": "Power Manager settings",
-        "description": "Change the global grid, PV and battery configuration. In surplus mode PV is allocated to surplus loads by priority; at the reserve SOC the mode automatically returns to Normal. The integration reloads after saving.",
+        "title": "Energiemanager GSI settings",
+        "description": "Map the grid connection and optional PV/battery sensors. Positive grid power means import; negative means export. Net export preserves other household demand and battery charging; PV budget distributes generation. PMAX limits both strategies.",
         "data": {
           "grid_power_entity": "Grid power sensor",
           "grid_limit_kw": "PMAX",
@@ -61,7 +77,14 @@
           "invert_battery_power": "Invert battery power sign",
           "battery_soc_entity": "Battery SOC sensor",
           "battery_soc_scale": "Battery SOC source scale",
-          "surplus_min_battery_soc": "Battery reserve SOC for surplus mode"
+          "surplus_min_battery_soc": "Battery reserve SOC for surplus mode",
+          "grid_power_factor": "Grid power factor",
+          "pv_power_factor": "PV power factor",
+          "battery_power_factor": "Battery power factor",
+          "battery_soc_factor": "Battery SOC factor",
+          "surplus_strategy": "Surplus strategy",
+          "house_power_entity": "Optional total household meter",
+          "house_power_factor": "Household meter factor"
         },
         "data_description": {
           "grid_power_entity": "Required. Net power measured at the grid connection point.",
@@ -75,7 +98,14 @@
           "invert_battery_power": "Enable if the battery sign convention is reversed.",
           "battery_soc_entity": "Optional battery state-of-charge sensor.",
           "battery_soc_scale": "Percent = 0..100 %, fraction = unitless 0..1.",
-          "surplus_min_battery_soc": "Optional. At or below this SOC, Power Manager automatically returns from Surplus to Normal."
+          "surplus_min_battery_soc": "At the reserve threshold, net export blocks consumers. The existing PV budget strategy switches to Normal.",
+          "grid_power_factor": "Raw state × factor, then conversion of the sensor unit. Example: 5000 W × 0.1 = 500 W. Factor 1 leaves the value unchanged.",
+          "pv_power_factor": "Raw state × factor, then conversion of the sensor unit. Example: 5000 W × 0.1 = 500 W. Factor 1 leaves the value unchanged.",
+          "battery_power_factor": "Raw state × factor, then conversion of the sensor unit. Example: 5000 W × 0.1 = 500 W. Factor 1 leaves the value unchanged.",
+          "battery_soc_factor": "Raw state × factor, followed by the selected percent/fraction conversion. Result must be 0–100%.",
+          "surplus_strategy": "Net export: controlled actual demand − grid import − battery discharge. PV budget retains the existing generation-based budget. Battery discharge can only be excluded when a battery power sensor is configured.",
+          "house_power_entity": "Only for a meter of total household demand. Leave empty for an import/export grid meter: house = grid + PV + battery discharge (charging negative). Base demand = house − all consumers.",
+          "house_power_factor": "Raw state × factor before unit conversion."
         }
       }
     },
@@ -85,7 +115,9 @@
       "reserve_must_be_below_grid_limit": "The grid safety reserve must be non-negative and lower than PMAX.",
       "grid_timeout_must_be_positive": "The grid sensor timeout must be greater than 0 seconds.",
       "soc_limit_requires_soc_entity": "A battery SOC sensor is required when a minimum battery SOC is configured.",
-      "duplicate_entities": "The same entity cannot be used for multiple different global measurements."
+      "duplicate_entities": "The same entity cannot be used for multiple different global measurements.",
+      "invalid_input_factor": "Select one of the supported factors.",
+      "invalid_surplus_strategy": "Unknown surplus strategy."
     }
   },
   "config_subentries": {
@@ -118,11 +150,15 @@
             "min_on_time_s": "Minimum on time",
             "min_off_time_s": "Minimum off time",
             "settling_time_s": "Settling time",
-            "evse_phases": "EVSE phases",
-            "evse_voltage_v": "EVSE phase voltage",
+            "evse_phases": "Phases for amp conversion",
+            "evse_voltage_v": "Phase voltage for amp conversion",
             "evse_min_current_a": "EVSE minimum current",
             "evse_max_current_a": "EVSE maximum current",
-            "evse_pause_current_a": "EVSE pause current"
+            "evse_pause_current_a": "EVSE pause current",
+            "actual_power_factor": "Actual power factor",
+            "request_factor": "Requested power factor",
+            "command_on": "ON command",
+            "command_off": "OFF command"
           },
           "data_description": {
             "load_name": "Unique name used by the controller.",
@@ -136,9 +172,9 @@
             "invert_actual_power": "Invert the sign of the actual-power sensor.",
             "request_entity": "Optional. A power sensor requests that kW amount; an on/off entity requests max_kw when on.",
             "availability_entity": "Optional on/off entity. Unknown or unavailable blocks this load.",
-            "output_entity": "For modulating/EVSE: number or input_number. For switch loads: switch or input_boolean.",
-            "enable_entity": "Optional switch/input_boolean used as an additional physical enable/disable output.",
-            "output_unit": "For modulating loads. Auto reads W/kW/MW from the output entity. Choose explicitly if the entity has no unit.",
+            "output_entity": "Power setpoint: number/input_number. Switching load or separate enable: switch, input_boolean, number, input_number, select or input_select.",
+            "enable_entity": "Power setpoint: number/input_number. Switching load or separate enable: switch, input_boolean, number, input_number, select or input_select.",
+            "output_unit": "Choose A or W (also kW/MW). Auto uses the entity unit, or A for EVSE. Amps use the phases and voltage below; P = phases × voltage × I at power factor 1.",
             "safe_output_value": "Numeric value written at zero target for a modulating load. Usually 0. If it is outside the number range, configure a separate enable entity.",
             "peak_shaving_enabled": "Allow this load to be reduced for PMAX.",
             "surplus_enabled": "Allow this load to receive PV surplus in surplus mode.",
@@ -151,12 +187,16 @@
             "evse_voltage_v": "Phase-to-neutral voltage used for kW-to-A conversion.",
             "evse_min_current_a": "Technical charging minimum.",
             "evse_max_current_a": "Maximum charging current.",
-            "evse_pause_current_a": "Current value that represents pause/off. It must be below the technical minimum."
+            "evse_pause_current_a": "Current value that represents pause/off. It must be below the technical minimum.",
+            "actual_power_factor": "Raw state × factor, then conversion of the sensor unit. Example: 5000 W × 0.1 = 500 W. Factor 1 leaves the value unchanged.",
+            "request_factor": "Raw state × factor, then conversion of the sensor unit. Example: 5000 W × 0.1 = 500 W. Factor 1 leaves the value unchanged. Boolean demand states are not scaled.",
+            "command_on": "Value for a numeric switching load or separate enable, e.g. 12. For select/input_select use the exact option text. switch/input_boolean uses turn_on/turn_off.",
+            "command_off": "Value for a numeric switching load or separate enable, e.g. 14. For select/input_select use the exact option text. switch/input_boolean uses turn_on/turn_off."
           }
         },
         "reconfigure": {
           "title": "Reconfigure controllable load",
-          "description": "Change this load. Saving reloads Power Manager; live control is deliberately disarmed after the reload.",
+          "description": "Change this load. Saving reloads Energiemanager GSI; live control is deliberately disarmed after the reload.",
           "data": {
             "load_name": "Name",
             "load_type": "Load type",
@@ -180,11 +220,15 @@
             "min_on_time_s": "Minimum on time",
             "min_off_time_s": "Minimum off time",
             "settling_time_s": "Settling time",
-            "evse_phases": "EVSE phases",
-            "evse_voltage_v": "EVSE phase voltage",
+            "evse_phases": "Phases for amp conversion",
+            "evse_voltage_v": "Phase voltage for amp conversion",
             "evse_min_current_a": "EVSE minimum current",
             "evse_max_current_a": "EVSE maximum current",
-            "evse_pause_current_a": "EVSE pause current"
+            "evse_pause_current_a": "EVSE pause current",
+            "actual_power_factor": "Actual power factor",
+            "request_factor": "Requested power factor",
+            "command_on": "ON command",
+            "command_off": "OFF command"
           },
           "data_description": {
             "load_name": "Unique name used by the controller.",
@@ -198,9 +242,9 @@
             "invert_actual_power": "Invert the sign of the actual-power sensor.",
             "request_entity": "Optional. A power sensor requests that kW amount; an on/off entity requests max_kw when on.",
             "availability_entity": "Optional on/off entity. Unknown or unavailable blocks this load.",
-            "output_entity": "For modulating/EVSE: number or input_number. For switch loads: switch or input_boolean.",
-            "enable_entity": "Optional switch/input_boolean used as an additional physical enable/disable output.",
-            "output_unit": "For modulating loads. Auto reads W/kW/MW from the output entity. Choose explicitly if the entity has no unit.",
+            "output_entity": "Power setpoint: number/input_number. Switching load or separate enable: switch, input_boolean, number, input_number, select or input_select.",
+            "enable_entity": "Power setpoint: number/input_number. Switching load or separate enable: switch, input_boolean, number, input_number, select or input_select.",
+            "output_unit": "Choose A or W (also kW/MW). Auto uses the entity unit, or A for EVSE. Amps use the phases and voltage below; P = phases × voltage × I at power factor 1.",
             "safe_output_value": "Numeric value written at zero target for a modulating load. Usually 0. If it is outside the number range, configure a separate enable entity.",
             "peak_shaving_enabled": "Allow this load to be reduced for PMAX.",
             "surplus_enabled": "Allow this load to receive PV surplus in surplus mode.",
@@ -213,7 +257,11 @@
             "evse_voltage_v": "Phase-to-neutral voltage used for kW-to-A conversion.",
             "evse_min_current_a": "Technical charging minimum.",
             "evse_max_current_a": "Maximum charging current.",
-            "evse_pause_current_a": "Current value that represents pause/off. It must be below the technical minimum."
+            "evse_pause_current_a": "Current value that represents pause/off. It must be below the technical minimum.",
+            "actual_power_factor": "Raw state × factor, then conversion of the sensor unit. Example: 5000 W × 0.1 = 500 W. Factor 1 leaves the value unchanged.",
+            "request_factor": "Raw state × factor, then conversion of the sensor unit. Example: 5000 W × 0.1 = 500 W. Factor 1 leaves the value unchanged. Boolean demand states are not scaled.",
+            "command_on": "Value for a numeric switching load or separate enable, e.g. 12. For select/input_select use the exact option text. switch/input_boolean uses turn_on/turn_off.",
+            "command_off": "Value for a numeric switching load or separate enable, e.g. 14. For select/input_select use the exact option text. switch/input_boolean uses turn_on/turn_off."
           }
         }
       },
@@ -230,9 +278,9 @@
         "stop_margin_above_start_margin": "Stop margin must not be greater than start margin.",
         "time_must_be_nonnegative": "Time values must not be negative.",
         "invalid_output_unit": "Unsupported output unit.",
-        "switch_output_required": "A switch load requires a switch or input_boolean output.",
+        "switch_output_required": "Choose switch, input_boolean, number, input_number, select or input_select.",
         "number_output_required": "A modulating or EVSE load requires a number or input_number output.",
-        "enable_switch_required": "The separate enable entity must be a switch or input_boolean.",
+        "enable_switch_required": "Choose switch, input_boolean, number, input_number, select or input_select.",
         "invalid_evse_phases": "EVSE phases must be 1, 2 or 3.",
         "must_be_positive": "This value must be greater than zero.",
         "invalid_current_range": "EVSE current limits are invalid.",
@@ -240,7 +288,10 @@
         "safe_output_must_be_nonnegative": "The safe numeric output value must not be negative.",
         "evse_min_power_below_current_minimum": "EVSE minimum power is below the power represented by the configured minimum current.",
         "evse_max_power_above_current_maximum": "EVSE maximum power cannot be reached with the configured maximum current.",
-        "actual_timeout_must_be_positive": "The actual-power sensor timeout must be greater than 0 seconds."
+        "actual_timeout_must_be_positive": "The actual-power sensor timeout must be greater than 0 seconds.",
+        "invalid_input_factor": "Select one of the supported factors.",
+        "invalid_commands": "ON/OFF must differ. Numeric outputs require finite numbers.",
+        "duplicate_output_entity": "This output is already assigned as a main output or enable."
       },
       "entry_type": "Controllable load",
       "initiate_flow": {
@@ -327,6 +378,12 @@
       },
       "load_target_power": {
         "name": "Target power"
+      },
+      "house_power": {
+        "name": "Total household demand"
+      },
+      "house_base_power": {
+        "name": "Household base demand"
       }
     },
     "binary_sensor": {
@@ -362,11 +419,24 @@
           "normal": "Normal",
           "surplus": "Surplus"
         }
+      },
+      "manual_mode": {
+        "name": "Consumer control",
+        "state": {
+          "auto": "Automatic",
+          "manual": "Manual ON",
+          "off": "Manual OFF"
+        }
       }
     },
     "switch": {
       "live_control": {
         "name": "Live control"
+      }
+    },
+    "number": {
+      "manual_power": {
+        "name": "Manual power demand"
       }
     }
   },
@@ -382,6 +452,12 @@
         "modulating": "Modulating power",
         "switch": "Switch load",
         "evse": "EVSE / wallbox"
+      }
+    },
+    "surplus_strategy": {
+      "options": {
+        "net_export": "Net export (preserve household demand and battery charging)",
+        "pv_budget": "Distribute PV generation (existing strategy)"
       }
     }
   }

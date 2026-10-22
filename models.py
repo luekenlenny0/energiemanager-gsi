@@ -156,6 +156,7 @@ class ControllerInputs:
     now_s: float = 0.0
 
     surplus_min_battery_soc: float | None = None
+    surplus_strategy: str = "pv_budget"
 
 
 @dataclass

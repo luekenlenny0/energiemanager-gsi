@@ -40,8 +40,11 @@ async def async_setup_entry(
     from homeassistant.components.http import StaticPathConfig
     from homeassistant.const import Platform
 
-    from .const import DOMAIN, VERSION
+    from .const import DOMAIN, NAME, VERSION
     from .coordinator import PowerManagerCoordinator
+
+    if entry.title == "Power Manager":
+        hass.config_entries.async_update_entry(entry, title=NAME)
 
     domain_data = hass.data.setdefault(DOMAIN, {})
     frontend_dir = Path(__file__).parent / "frontend"
@@ -78,6 +81,7 @@ async def async_setup_entry(
             Platform.BINARY_SENSOR,
             Platform.SELECT,
             Platform.SWITCH,
+            Platform.NUMBER,
         ],
     )
 
@@ -112,6 +116,7 @@ async def async_unload_entry(
             Platform.BINARY_SENSOR,
             Platform.SELECT,
             Platform.SWITCH,
+            Platform.NUMBER,
         ],
     )
 

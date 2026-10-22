@@ -1,4 +1,5 @@
 {
-  "name": "Power Manager",
-  "render_readme": true
+  "name": "Energiemanager GSI",
+  "render_readme": true,
+  "homeassistant": "2026.9.0"
 }

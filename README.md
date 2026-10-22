@@ -1,14 +1,36 @@
-# Power Manager for Home Assistant
+# Energiemanager GSI for Home Assistant
 
-Power Manager ist eine generische Home-Assistant-Integration für ein zentrales Energiemanagement. Sie verbindet vorhandene Home-Assistant-Entities mit einem getesteten Reglerkern und kann damit Peakshaving, PV-Überschussbetrieb und priorisierte Verbrauchersteuerung abbilden.
+Energiemanager GSI ist eine generische Home-Assistant-Integration für ein zentrales Energiemanagement. Sie verbindet vorhandene Home-Assistant-Entities mit einem getesteten Reglerkern und kann damit Peakshaving, PV-Überschussbetrieb und priorisierte Verbrauchersteuerung abbilden.
 
-**Aktueller Stand: V3.1.1**
+**Aktueller Stand: V3.3.0 · Home Assistant ab 2026.9**
 
-## Neu in V3.1.1: responsive Power Manager Dashboard Card
+## Neu in V3.3.0: Kreisgrafik und manuelle Verbrauchersteuerung
+
+- Energieflussmonitor mit schwarzem Hintergrund, grünen/gelben Ringen und animierten Flusspunkten.
+- Seitenleiste je Verbraucher: **AUTO / EIN / AUS** sowie frei einstellbarer **kW-Sollwert**.
+- Manuelle Anforderungen durchlaufen weiterhin Prioritäten, technische Grenzen, PMAX und das gewählte Überschussbudget.
+- Grundverbrauch automatisch aus **Netz + PV + Speicherleistung − Verbraucherleistungen**; Speicherentladung positiv, Speicherladung negativ. Alternativ ist ein separater Hausverbrauchszähler möglich.
+- Fehlende Verbraucher-Istmessungen werden als Schätzung gekennzeichnet; Dry-Run-Sollwerte werden nicht als echter Verbrauch in die Hausbilanz eingerechnet.
+- Neue HA-Entities für manuelle Anforderung und Betriebsart pro Verbraucher; Aktualisierung der Kartenzuordnung bei Registry-Änderungen.
+
+Siehe [Einrichtung und Handsteuerung V3.3](SETUP_3_3.md). Die Beispielansicht verwendet Wärmepumpe, Wallbox 1, Wallbox 2 und Heizstab.
+
+## Neu in V3.2.0: frei konfigurierbare Ein- und Ausgänge
+
+- Individuelle Faktoren **0,001 / 0,01 / 0,1 / 1 / 10 / 100 / 1000** für Netz, PV, Batterie, SOC und Verbraucher-Ist-/Bedarfsleistung.
+- Ausgangseinheit **A oder W** direkt wählbar, auch für EVSE; kW/MW bleiben verfügbar. A nutzt konfigurierbare Phasen und Spannung.
+- Eigene **AN-/AUS-Werte**, beispielsweise **12 / 14**, für numerische Schaltlasten und separate Freigaben. Auch `select`-/`input_select`-Optionen sind möglich.
+- Neue Strategie **Netzüberschuss** erhält den Hausverbrauch und die Batterieladung. Batterieentladung wird bei vorhandenem Batteriesensor aus dem Budget entfernt. Bestehende Einrichtungen behalten ihre PV-Budget-Strategie.
+- Visueller Karteneditor für Titel, W/kW-Anzeige, sichtbare Bereiche, kompakte Darstellung und individuelle Verbrauchernamen/-symbole.
+- Ausgangswert je Verbraucher im Energieflussmonitor; korrigierte Zuordnung von Gesamt-Sollwert und projizierter Netzleistung.
+
+Die [Einrichtungsanleitung für V3.2](SETUP_3_2.md) enthält Beispiele für Skalierung, 12/14-Gerätebefehle, Prioritäten und beide Überschussstrategien. Alle Gerätezuordnungen bleiben frei konfigurierbar. Nach dem Start bleibt Live-Regelung aus, bis sie explizit aktiviert wird.
+
+## Neu in V3.1.1: responsive Energiemanager GSI Dashboard Card
 
 V3.1.1 verbessert die in V3.1.0 eingeführte Home-Assistant-Dashboard-Karte. Das Layout richtet sich jetzt nach der tatsächlichen Kartenbreite statt nach der Browserbreite und bleibt damit auch in schmalen Sections lesbar. Zusätzlich werden Summenwerte bei Bedarf aus den Verbraucher-Sollwerten abgeleitet, falls ein globaler Aggregat-Sensor kurzfristig nicht verfügbar ist. Die Regellogik bleibt unverändert.
 
-Die Karte wird zusammen mit der HACS-Integration installiert und von Power Manager automatisch als Frontend-Modul bereitgestellt. Sie erkennt die Power-Manager-Entities über die Home-Assistant-Entity-Registry und benötigt deshalb keine fest codierten Entity-IDs.
+Die Karte wird zusammen mit der HACS-Integration installiert und von Energiemanager GSI automatisch als Frontend-Modul bereitgestellt. Sie erkennt die Energiemanager GSI-Entities über die Home-Assistant-Entity-Registry und benötigt deshalb keine fest codierten Entity-IDs.
 
 Angezeigt werden unter anderem:
 
@@ -28,7 +50,7 @@ Beim Aktivieren der Live-Regelung sowie bei einem Betriebsartwechsel während ak
 
 ## Grundprinzip
 
-Power Manager implementiert bewusst keine gerätespezifische MQTT-, Modbus- oder Herstellerkommunikation. Solche Integrationen stellen in Home Assistant Mess- und Stell-Entities bereit. Power Manager liest diese Entities, rechnet intern ausschließlich in kW und schreibt anschließend auf die konfigurierten Home-Assistant-Ausgänge.
+Energiemanager GSI implementiert bewusst keine gerätespezifische MQTT-, Modbus- oder Herstellerkommunikation. Solche Integrationen stellen in Home Assistant Mess- und Stell-Entities bereit. Energiemanager GSI liest diese Entities, rechnet intern ausschließlich in kW und schreibt anschließend auf die konfigurierten Home-Assistant-Ausgänge.
 
 ```text
 Messgeräte / Geräte
@@ -38,7 +60,7 @@ Messgeräte / Geräte
 Home-Assistant-Entities
         │
         ▼
-Power Manager
+Energiemanager GSI
   ├─ Messwertadapter
   ├─ zentraler Reglerkern
   └─ Ausgangsadapter
@@ -77,7 +99,9 @@ Dadurch bleibt die Regelstrategie unabhängig von einem bestimmten Hersteller, P
 - Ausgangsbefehle werden nur bei tatsächlicher Wertänderung gesendet
 - Lastreduzierungen werden vor Laststeigerungen ausgeführt
 
-## Überschussbetrieb ab V3.0.6
+## Bisherige Überschussstrategie „PV-Budget“ ab V3.0.6
+
+Die folgende Beschreibung gilt für **PV-Budget**. Für echtes Überschussladen ohne zusätzliches Netzbudget die neue Strategie **Netzüberschuss** wählen; Details siehe [Einrichtungsanleitung](SETUP_3_2.md).
 
 Im Modus **Überschuss** bildet die gemessene PV-Leistung das Rohbudget für die als Überschussverbraucher freigegebenen Lasten. Die Leistung wird anschließend nach den konfigurierten Prioritäten verteilt; `1` ist die höchste Priorität. Batterieentladung erweitert dieses PV-Budget nicht.
 
@@ -85,7 +109,7 @@ Eine bereits laufende Batterieladung wird im Überschussbetrieb nicht mehr als z
 
 Ist ein Batterie-Reserve-SOC konfiguriert, bleibt Überschuss nur aktiv, solange der SOC **oberhalb** dieser Grenze liegt. Bei Erreichen oder Unterschreiten der Grenze wechselt die Home-Assistant-Integration automatisch auf **Normal** zurück. Das ist kein Fail-Safe, sondern die konfigurierte Betriebsstrategie.
 
-Wichtig: Seit V3.0.6 steuert Power Manager keinen Batterie-Wechselrichter direkt. Sie reserviert im Überschussbetrieb keine Batterieladung und weist vorhandene PV-Leistung zuerst den freigegebenen Verbrauchern zu. Reicht deren Anforderung nicht aus, kann eine externe/automatische Batterieregelung verbleibende PV-Leistung weiterhin laden. Ein hartes Ladeverbot benötigt einen separat regelbaren Batterieaktor.
+Wichtig: Seit V3.0.6 steuert Energiemanager GSI keinen Batterie-Wechselrichter direkt. Sie reserviert im Überschussbetrieb keine Batterieladung und weist vorhandene PV-Leistung zuerst den freigegebenen Verbrauchern zu. Reicht deren Anforderung nicht aus, kann eine externe/automatische Batterieregelung verbleibende PV-Leistung weiterhin laden. Ein hartes Ladeverbot benötigt einen separat regelbaren Batterieaktor.
 
 ## Sicherheitsprinzip
 
@@ -109,7 +133,7 @@ Auch bei einem Ausgangsfehler werden alle Ausgänge bestmöglich in ihren sicher
 
 ### Physikalische Grenze der Softwaregarantie
 
-Power Manager kann garantieren, dass seine **berechneten und angeforderten** Sollwerte das verfügbare PMAX-Budget nicht absichtlich überschreiten. Reale Geräte und Netzwerke können Befehle jedoch verzögert, fehlerhaft oder gar nicht umsetzen. Für belastbares Peakshaving wird deshalb für jeden live geregelten Verbraucher ein echter Istleistungssensor dringend empfohlen. Ohne Istwert muss der Regler den vorherigen Sollwert als Schätzung verwenden.
+Energiemanager GSI kann garantieren, dass seine **berechneten und angeforderten** Sollwerte das verfügbare PMAX-Budget nicht absichtlich überschreiten. Reale Geräte und Netzwerke können Befehle jedoch verzögert, fehlerhaft oder gar nicht umsetzen. Für belastbares Peakshaving wird deshalb für jeden live geregelten Verbraucher ein echter Istleistungssensor dringend empfohlen. Ohne Istwert muss der Regler den vorherigen Sollwert als Schätzung verwenden.
 
 ## Dry-Run und Live-Regelung
 
@@ -130,11 +154,11 @@ Empfohlene Inbetriebnahme:
 
 ### Modulierbare Leistung
 
-Für Verbraucher mit einem numerischen Sollwert. Unterstützte Ausgangs-Entities sind `number` und `input_number`. Die Einheit kann automatisch aus der Entity gelesen oder explizit auf W, kW oder MW festgelegt werden.
+Für Verbraucher mit einem numerischen Sollwert. Unterstützte Ausgangs-Entities sind `number` und `input_number`. Die Einheit kann automatisch aus der Entity gelesen oder explizit auf A, W, kW oder MW festgelegt werden.
 
 ### Schaltlast
 
-Für reine Ein/Aus-Verbraucher. Unterstützte Ausgänge sind `switch` und `input_boolean`. Die konfigurierte Maximalleistung ist gleichzeitig die technische Mindestleistung.
+Für reine Ein/Aus-Verbraucher. Unterstützte Ausgänge sind `switch`, `input_boolean`, `number`, `input_number`, `select` und `input_select`. Bei numerischen bzw. Auswahl-Ausgängen sind AN/AUS frei konfigurierbar. Die konfigurierte Maximalleistung ist gleichzeitig die technische Mindestleistung.
 
 ### EVSE / Wallbox
 
@@ -172,11 +196,11 @@ Nach dem Veröffentlichen auf GitHub:
 
 1. In HACS oben rechts das Menü öffnen.
 2. **Custom repositories** wählen.
-3. `https://github.com/ww118-rgb/power-manager` eintragen.
+3. `https://github.com/luekenlenny0/energiemanager-gsi` eintragen.
 4. Kategorie **Integration** wählen.
-5. Repository hinzufügen und **Power Manager** installieren.
+5. Repository hinzufügen und **Energiemanager GSI** installieren.
 6. Home Assistant vollständig neu starten.
-7. Unter **Einstellungen → Geräte & Dienste → Integration hinzufügen** den **Power Manager** einrichten.
+7. Unter **Einstellungen → Geräte & Dienste → Integration hinzufügen** den **Energiemanager GSI** einrichten.
 
 Vor dem ersten Push muss einmal `prepare_hacs_repo.py` ausgeführt werden, damit GitHub-Benutzername und Repository-URL korrekt in `manifest.json` eingetragen werden.
 
@@ -186,8 +210,8 @@ Nach Installation bzw. Update auf V3.1.0 und einem vollständigen Home-Assistant
 
 1. Dashboard öffnen und **Bearbeiten** wählen.
 2. **Karte hinzufügen** wählen.
-3. Nach **Power Manager** suchen.
-4. Die Community-Karte **Power Manager** auswählen.
+3. Nach **Energiemanager GSI** suchen.
+4. Die Community-Karte **Energiemanager GSI** auswählen.
 5. Speichern.
 
 Alternativ kann sie im YAML-Modus mit folgendem Minimalblock verwendet werden:
@@ -196,7 +220,7 @@ Alternativ kann sie im YAML-Modus mit folgendem Minimalblock verwendet werden:
 type: custom:power-manager-card
 ```
 
-Die Karte benötigt keine manuelle Zuordnung der Power-Manager-Entities. Sie liest die zur Integration gehörenden Entities automatisch aus der Entity Registry.
+Die Karte benötigt keine manuelle Zuordnung der Energiemanager GSI-Entities. Sie liest die zur Integration gehörenden Entities automatisch aus der Entity Registry.
 
 ## Installation
 
@@ -206,10 +230,11 @@ Für den vorhandenen Energiedaten-Simulator siehe [SIMULATOR_TEST.md](SIMULATOR_
 
 ## Tests
 
-Die reine Regelungs-, Konvertierungs- und Paketlogik wird mit `pytest` getestet.
+Die Regelungs-, Konvertierungs-, Adapter- und Paketlogik wird mit `pytest` getestet. Die Karte hat zusätzlich Verhaltenstests ohne externe Node-Abhängigkeiten:
 
 ```powershell
 pytest -v
+node --test test_frontend.cjs
 ```
 
 Der V3.0-Stand enthält außerdem Paritätstests zwischen dem Referenz-Reglerkern und der im Home-Assistant-Paket eingebetteten Version.

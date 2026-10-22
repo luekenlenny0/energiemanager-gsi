@@ -1,13 +1,15 @@
-"""Constants for the Power Manager integration."""
+"""Constants for the Energiemanager GSI integration."""
 
 DOMAIN = "power_manager"
-NAME = "Power Manager"
-VERSION = "3.1.1"
+NAME = "Energiemanager GSI"
+VERSION = "3.3.0"
 
 SUBENTRY_TYPE_LOAD = "load"
 
 # Global configuration.
 CONF_GRID_POWER_ENTITY = "grid_power_entity"
+CONF_HOUSE_POWER_ENTITY = "house_power_entity"
+CONF_HOUSE_POWER_FACTOR = "house_power_factor"
 CONF_GRID_LIMIT_KW = "grid_limit_kw"
 CONF_GRID_RESERVE_KW = "grid_reserve_kw"
 CONF_GRID_SENSOR_TIMEOUT_S = "grid_sensor_timeout_s"
@@ -19,6 +21,13 @@ CONF_SURPLUS_MIN_BATTERY_SOC = "surplus_min_battery_soc"
 CONF_INVERT_GRID_POWER = "invert_grid_power"
 CONF_INVERT_PV_POWER = "invert_pv_power"
 CONF_INVERT_BATTERY_POWER = "invert_battery_power"
+CONF_GRID_POWER_FACTOR = "grid_power_factor"
+CONF_PV_POWER_FACTOR = "pv_power_factor"
+CONF_BATTERY_POWER_FACTOR = "battery_power_factor"
+CONF_BATTERY_SOC_FACTOR = "battery_soc_factor"
+CONF_SURPLUS_STRATEGY = "surplus_strategy"
+INPUT_FACTORS = (0.001, 0.01, 0.1, 1.0, 10.0, 100.0, 1000.0)
+SURPLUS_STRATEGIES = ("net_export", "pv_budget")
 
 # Load subentry configuration.
 CONF_LOAD_NAME = "load_name"
@@ -43,6 +52,10 @@ CONF_STOP_MARGIN_KW = "stop_margin_kw"
 CONF_MIN_ON_TIME_S = "min_on_time_s"
 CONF_MIN_OFF_TIME_S = "min_off_time_s"
 CONF_SETTLING_TIME_S = "settling_time_s"
+CONF_ACTUAL_POWER_FACTOR = "actual_power_factor"
+CONF_REQUEST_FACTOR = "request_factor"
+CONF_COMMAND_ON = "command_on"
+CONF_COMMAND_OFF = "command_off"
 
 # EVSE adapter configuration.
 CONF_EVSE_PHASES = "evse_phases"
@@ -64,11 +77,13 @@ OUTPUT_UNIT_AUTO = "auto"
 OUTPUT_UNIT_W = "W"
 OUTPUT_UNIT_KW = "kW"
 OUTPUT_UNIT_MW = "MW"
+OUTPUT_UNIT_A = "A"
 OUTPUT_UNITS = (
     OUTPUT_UNIT_AUTO,
     OUTPUT_UNIT_W,
     OUTPUT_UNIT_KW,
     OUTPUT_UNIT_MW,
+    OUTPUT_UNIT_A,
 )
 
 BATTERY_SOC_SCALE_PERCENT = "percent"
@@ -116,3 +131,4 @@ SUPPORTED_POWER_UNITS = ("mW", "W", "kW", "MW", "GW")
 SUPPORTED_OUTPUT_POWER_UNITS = ("W", "kW", "MW")
 SUPPORTED_NUMBER_DOMAINS = ("number", "input_number")
 SUPPORTED_SWITCH_DOMAINS = ("switch", "input_boolean")
+SUPPORTED_COMMAND_DOMAINS = (*SUPPORTED_SWITCH_DOMAINS, *SUPPORTED_NUMBER_DOMAINS, "select", "input_select")

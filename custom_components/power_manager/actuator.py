@@ -19,6 +19,8 @@ from homeassistant.core import HomeAssistant, State
 
 from .const import (
     CONF_ENABLE_ENTITY,
+    CONF_COMMAND_ON,
+    CONF_COMMAND_OFF,
     CONF_EVSE_MAX_CURRENT_A,
     CONF_EVSE_MIN_CURRENT_A,
     CONF_EVSE_PAUSE_CURRENT_A,
@@ -45,6 +47,7 @@ from .const import (
     SUPPORTED_NUMBER_DOMAINS,
     SUPPORTED_OUTPUT_POWER_UNITS,
     SUPPORTED_SWITCH_DOMAINS,
+    SUPPORTED_COMMAND_DOMAINS,
 )
 from .outputs import OutputConversionError, OutputPlan, build_output_plan
 
@@ -58,7 +61,7 @@ class AppliedCommand:
     """Result of applying one load target."""
 
     target_kw: float
-    numeric_value: float | None = None
+    numeric_value: float | str | None = None
     numeric_unit: str | None = None
     enabled: bool | None = None
     wrote_numeric: bool = False
@@ -87,19 +90,22 @@ def _effective_power_unit(hass: HomeAssistant, load_data: dict[str, Any]) -> str
 
     configured_unit = str(load_data.get(CONF_OUTPUT_UNIT, DEFAULT_OUTPUT_UNIT))
     if configured_unit != OUTPUT_UNIT_AUTO:
-        if configured_unit not in SUPPORTED_OUTPUT_POWER_UNITS:
+        if configured_unit not in (*SUPPORTED_OUTPUT_POWER_UNITS, "A"):
             raise ActuatorError(
                 f"Ausgangseinheit '{configured_unit}' wird nicht unterstützt."
             )
         return configured_unit
 
+    if load_data.get(CONF_LOAD_TYPE) == LOAD_TYPE_EVSE:
+        return "A"
+
     output_entity = str(load_data.get(CONF_OUTPUT_ENTITY, ""))
     state = _state_or_error(hass, output_entity, "Leistungsausgang")
     unit = state.attributes.get(ATTR_UNIT_OF_MEASUREMENT)
-    if unit not in SUPPORTED_OUTPUT_POWER_UNITS:
+    if unit not in (*SUPPORTED_OUTPUT_POWER_UNITS, "A"):
         raise ActuatorError(
             "Leistungsausgang hat keine unterstützte Einheit. "
-            "Wähle W, kW oder MW explizit in der Verbraucher-Konfiguration."
+            "Wähle W, kW, MW oder A explizit in der Verbraucher-Konfiguration."
         )
     return str(unit)
 
@@ -150,7 +156,7 @@ def _build_plan(
 
     load_type = str(load_data.get(CONF_LOAD_TYPE, ""))
     power_unit = "kW"
-    if load_type not in (LOAD_TYPE_EVSE, LOAD_TYPE_SWITCH):
+    if load_type != LOAD_TYPE_SWITCH:
         power_unit = _effective_power_unit(hass, load_data)
 
     try:
@@ -222,6 +228,71 @@ async def _async_set_switch(
     return True
 
 
+def _command_value(entity_id: str, raw: Any) -> float | str:
+    """Keep select options as text; parse numeric command entities strictly."""
+
+    if _domain(entity_id) in SUPPORTED_NUMBER_DOMAINS:
+        try:
+            value = float(raw)
+        except (TypeError, ValueError) as err:
+            raise ActuatorError("AN/AUS-Befehl muss für diesen Ausgang eine Zahl sein.") from err
+        if not isfinite(value):
+            raise ActuatorError("AN/AUS-Befehl muss endlich sein.")
+        return value
+    value = str(raw)
+    if not value.strip():
+        raise ActuatorError("AN/AUS-Befehl darf nicht leer sein.")
+    return value
+
+
+def _validate_command(hass: HomeAssistant, entity_id: str, data: dict[str, Any]) -> None:
+    """Validate both custom states before sending any live command."""
+
+    domain = _domain(entity_id)
+    if domain not in SUPPORTED_COMMAND_DOMAINS:
+        raise ActuatorError("Schaltausgang benötigt switch, input_boolean, number, input_number, select oder input_select.")
+    state = _state_or_error(hass, entity_id, "Schaltausgang")
+    if domain in SUPPORTED_SWITCH_DOMAINS:
+        return
+    on = _command_value(entity_id, data.get(CONF_COMMAND_ON, "1"))
+    off = _command_value(entity_id, data.get(CONF_COMMAND_OFF, "0"))
+    if on == off:
+        raise ActuatorError("AN und AUS müssen unterschiedliche Befehle haben.")
+    for value in (on, off):
+        if domain in SUPPORTED_NUMBER_DOMAINS:
+            if not _numeric_in_range(float(value), state):
+                raise ActuatorError(f"Schaltbefehl {value} liegt außerhalb des Entity-Bereichs.")
+        elif value not in state.attributes.get("options", []):
+            raise ActuatorError(f"Schaltbefehl '{value}' ist keine Option der Entity.")
+
+
+async def _async_set_command(
+    hass: HomeAssistant, entity_id: str, enabled: bool, data: dict[str, Any]
+) -> bool:
+    """Apply configurable commands to a switching or enable entity."""
+
+    domain = _domain(entity_id)
+    if domain not in SUPPORTED_COMMAND_DOMAINS:
+        raise ActuatorError("Nicht unterstützter Schaltausgang.")
+    if domain in SUPPORTED_SWITCH_DOMAINS:
+        return await _async_set_switch(hass, entity_id, enabled)
+    value = _command_value(entity_id, data.get(CONF_COMMAND_ON if enabled else CONF_COMMAND_OFF, "1" if enabled else "0"))
+    if domain in SUPPORTED_NUMBER_DOMAINS:
+        state = _state_or_error(hass, entity_id, "Schaltausgang")
+        if not _numeric_in_range(float(value), state):
+            raise ActuatorError("Schaltbefehl liegt außerhalb des Entity-Bereichs.")
+        return await _async_set_number(hass, entity_id, float(value))
+    state = _state_or_error(hass, entity_id, "Schaltausgang")
+    if value not in state.attributes.get("options", []):
+        raise ActuatorError("Schaltbefehl ist keine Option der Entity.")
+    if state.state == value:
+        return False
+    await hass.services.async_call(
+        domain, "select_option", {"entity_id": entity_id, "option": value}, blocking=True
+    )
+    return True
+
+
 def _validate_positive_plan_range(
     plan: OutputPlan,
     state: State,
@@ -265,16 +336,10 @@ def validate_actuator(hass: HomeAssistant, load_data: dict[str, Any]) -> None:
 
     enable_entity = str(load_data.get(CONF_ENABLE_ENTITY, ""))
     if enable_entity:
-        if _domain(enable_entity) not in SUPPORTED_SWITCH_DOMAINS:
-            raise ActuatorError("Freigabe-Entity muss switch oder input_boolean sein.")
-        _state_or_error(hass, enable_entity, "Freigabe-Ausgang")
+        _validate_command(hass, enable_entity, load_data)
 
     if load_type == LOAD_TYPE_SWITCH:
-        if output_domain not in SUPPORTED_SWITCH_DOMAINS:
-            raise ActuatorError(
-                f"Schaltverbraucher '{output_entity}' muss switch oder input_boolean sein."
-            )
-        _state_or_error(hass, output_entity, "Schaltausgang")
+        _validate_command(hass, output_entity, load_data)
         return
 
     if output_domain not in SUPPORTED_NUMBER_DOMAINS:
@@ -346,11 +411,16 @@ async def async_apply_target(
 
     if load_type == LOAD_TYPE_SWITCH:
         assert plan.enabled is not None
-        wrote_enable = await _async_set_switch(hass, output_entity, plan.enabled)
+        if enable_entity and not plan.enabled:
+            wrote_enable = await _async_set_command(hass, enable_entity, False, load_data)
+        wrote_output = await _async_set_command(hass, output_entity, plan.enabled, load_data)
+        if enable_entity and plan.enabled:
+            wrote_enable = await _async_set_command(hass, enable_entity, True, load_data)
         return AppliedCommand(
             target_kw=target_kw,
+            numeric_value=(_command_value(output_entity, load_data.get(CONF_COMMAND_ON if plan.enabled else CONF_COMMAND_OFF, "1" if plan.enabled else "0")) if _domain(output_entity) not in SUPPORTED_SWITCH_DOMAINS else None),
             enabled=plan.enabled,
-            wrote_enable=wrote_enable,
+            wrote_enable=wrote_enable or wrote_output,
         )
 
     output_state = _state_or_error(hass, output_entity, "Numerischer Ausgang")
@@ -363,7 +433,7 @@ async def async_apply_target(
         # enable exists, a numeric pause value outside the number entity range
         # can simply be skipped because the physical enable is already off.
         if enable_entity:
-            wrote_enable = await _async_set_switch(hass, enable_entity, False)
+            wrote_enable = await _async_set_command(hass, enable_entity, False, load_data)
 
         if _numeric_in_range(desired_numeric, output_state):
             wrote_numeric = await _async_set_number(hass, output_entity, desired_numeric)
@@ -394,7 +464,7 @@ async def async_apply_target(
     wrote_numeric = await _async_set_number(hass, output_entity, desired_numeric)
 
     if enable_entity:
-        wrote_enable = await _async_set_switch(hass, enable_entity, True)
+        wrote_enable = await _async_set_command(hass, enable_entity, True, load_data)
 
     return AppliedCommand(
         target_kw=target_kw,
