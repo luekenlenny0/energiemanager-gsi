@@ -83,9 +83,9 @@ def test_negative_safe_output_is_rejected():
     assert errors[CONF_SAFE_OUTPUT_VALUE] == "safe_output_must_be_nonnegative"
 
 
-def test_switch_requires_switch_output_domain():
+def test_switch_rejects_read_only_output_domain():
     errors = validate_load_data(
-        base_load(**{CONF_LOAD_TYPE: "switch", CONF_OUTPUT_ENTITY: "number.test"})
+        base_load(**{CONF_LOAD_TYPE: "switch", CONF_OUTPUT_ENTITY: "sensor.test"})
     )
     assert errors[CONF_OUTPUT_ENTITY] == "switch_output_required"
 
@@ -95,8 +95,8 @@ def test_modulating_requires_number_output_domain():
     assert errors[CONF_OUTPUT_ENTITY] == "number_output_required"
 
 
-def test_enable_entity_requires_switch_domain():
-    errors = validate_load_data(base_load(**{CONF_ENABLE_ENTITY: "number.enable"}))
+def test_enable_entity_rejects_read_only_domain():
+    errors = validate_load_data(base_load(**{CONF_ENABLE_ENTITY: "sensor.enable"}))
     assert errors[CONF_ENABLE_ENTITY] == "enable_switch_required"
 
 

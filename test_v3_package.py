@@ -13,7 +13,7 @@ def _json(relative: str):
 
 def test_manifest_and_runtime_version_match_v3():
     manifest = _json("manifest.json")
-    assert manifest["version"] == "3.1.1"
+    assert manifest["version"] == "3.3.0"
     assert VERSION == manifest["version"]
 
 
@@ -68,7 +68,7 @@ def test_generic_entity_selector_omits_none_domain_filter():
     assert 'if domain is not None:' in source
     assert 'config["domain"] = domain' in source
     assert '_optional_marker(CONF_OUTPUT_ENTITY, values): _entity_selector()' in source
-    assert 'domain=["switch", "input_boolean"]' in source
+    assert '"input_select"' in source
 
 
 def test_coordinator_load_diagnostic_age_is_wired_to_diagnostic_not_core_model():

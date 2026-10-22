@@ -1,5 +1,27 @@
 # Changelog
 
+## 3.3.0
+
+- Radialer Energieflussmonitor mit Flussrichtung und grünen/gelben Geräteknoten.
+- Manuelle Verbrauchersteuerung AUTO/EIN/AUS mit kW-Anforderung in der Seitenleiste.
+- Eigene number-/select-Entities je Verbraucher; Bedienung auch über native HA-Aktionen möglich.
+- Haus-/Grundverbrauch aus dem Netzzähler, PV, Speicher und tatsächlichen Verbraucherleistungen.
+- Optionale Zuordnung eines separaten Hausverbrauchszählers mit Skalierungsfaktor.
+- Diagnose bei unplausibler Hausbilanz und Kennzeichnung von Schätzwerten.
+- Integrationstests des Coordinators und seiner manuellen HA-Entities mit Zustands-/Aktions-Doubles.
+
+## 3.2.0
+
+- Unabhängige Eingangs-Skalierung mit sieben wählbaren Faktoren.
+- A-/W-Ausgänge für modulierbare Verbraucher und EVSE.
+- Frei wählbare AN/AUS-Befehle für number/input_number und select/input_select; auch als separate Freigabe.
+- Neue Netzüberschussstrategie ohne zusätzliches Netzbudget oder angerechnete Batterieentladung.
+- Visueller Editor für den Energieflussmonitor und Verbraucherdarstellung.
+- Korrigierte Registry-Zuordnung von Gesamt-Sollwert und projizierter Netzleistung.
+- Prüfung mehrfach zugeordneter Ausgänge sowie sichtbare Fehler bei Kartenaktionen.
+- Python-Verhaltenstests und Node-Tests für die Dashboard-Karte.
+- Mindestversion Home Assistant 2026.9 explizit in HACS-Metadaten angegeben.
+
 ## 3.0.0
 
 - vollständige Home-Assistant-Regelstrecke vom Entity-Eingang bis zum optionalen Live-Ausgang
