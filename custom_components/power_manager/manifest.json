@@ -2,17 +2,17 @@
   "domain": "power_manager",
   "name": "Energiemanager GSI",
   "codeowners": [
-    "@ww118-rgb"
+    "@luekenlenny0"
   ],
   "config_flow": true,
   "dependencies": [
     "frontend",
     "http"
   ],
-  "documentation": "https://github.com/ww118-rgb/power-manager",
+  "documentation": "https://github.com/luekenlenny0/energiemanager-gsi",
   "integration_type": "hub",
   "iot_class": "calculated",
-  "issue_tracker": "https://github.com/ww118-rgb/power-manager/issues",
+  "issue_tracker": "https://github.com/luekenlenny0/energiemanager-gsi/issues",
   "requirements": [],
   "single_config_entry": true,
   "version": "3.3.0"
