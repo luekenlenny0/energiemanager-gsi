@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Fill GitHub metadata for the Power Manager HACS repository."""
+"""Fill GitHub metadata for the Energiemanager GSI HACS repository."""
 
 from __future__ import annotations
 
@@ -23,7 +23,7 @@ def main() -> None:
         fail("Usage: python prepare_hacs_repo.py <github-user> [repository]")
 
     owner = sys.argv[1].strip()
-    repository = sys.argv[2].strip() if len(sys.argv) == 3 else "power-manager"
+    repository = sys.argv[2].strip() if len(sys.argv) == 3 else "energiemanager-gsi"
 
     if not re.fullmatch(r"[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})", owner):
         fail("GitHub user/organization name looks invalid.")

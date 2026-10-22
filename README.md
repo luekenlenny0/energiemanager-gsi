@@ -196,7 +196,7 @@ Nach dem Veröffentlichen auf GitHub:
 
 1. In HACS oben rechts das Menü öffnen.
 2. **Custom repositories** wählen.
-3. `https://github.com/ww118-rgb/power-manager` eintragen.
+3. `https://github.com/luekenlenny0/energiemanager-gsi` eintragen.
 4. Kategorie **Integration** wählen.
 5. Repository hinzufügen und **Energiemanager GSI** installieren.
 6. Home Assistant vollständig neu starten.

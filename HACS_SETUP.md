@@ -34,7 +34,7 @@ Issues sollten aktiviert sein.
 Im Projektordner ausführen:
 
 ```powershell
-python .\prepare_hacs_repo.py ww118-rgb power-manager
+python .\prepare_hacs_repo.py luekenlenny0 energiemanager-gsi
 ```
 
 Das Skript ersetzt die Platzhalter in `manifest.json` und der Dokumentation und prüft danach, dass keine Platzhalter übrig sind.
@@ -54,7 +54,7 @@ git init
 git branch -M main
 git add .
 git commit -m "Release Energiemanager GSI v3.0.0"
-git remote add origin https://github.com/ww118-rgb/power-manager.git
+git remote add origin https://github.com/luekenlenny0/energiemanager-gsi.git
 git push -u origin main
 ```
 
@@ -77,7 +77,7 @@ In Home Assistant / HACS:
 HACS
 → ⋮
 → Custom repositories
-→ Repository: https://github.com/ww118-rgb/power-manager
+→ Repository: https://github.com/luekenlenny0/energiemanager-gsi
 → Type: Integration
 → Add
 ```
