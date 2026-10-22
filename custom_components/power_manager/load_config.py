@@ -7,6 +7,10 @@ from typing import Any
 
 from .const import (
     CONF_ACTUAL_SENSOR_TIMEOUT_S,
+    CONF_ACTUAL_POWER_FACTOR,
+    CONF_REQUEST_FACTOR,
+    CONF_COMMAND_ON,
+    CONF_COMMAND_OFF,
     CONF_DEFAULT_REQUEST_KW,
     CONF_ENABLE_ENTITY,
     CONF_EVSE_MAX_CURRENT_A,
@@ -51,6 +55,8 @@ from .const import (
     OUTPUT_UNITS,
     SUPPORTED_NUMBER_DOMAINS,
     SUPPORTED_SWITCH_DOMAINS,
+    SUPPORTED_COMMAND_DOMAINS,
+    INPUT_FACTORS,
 )
 
 
@@ -125,6 +131,10 @@ def normalize_load_data(data: dict[str, Any]) -> dict[str, Any]:
     normalized[CONF_OUTPUT_UNIT] = str(
         normalized.get(CONF_OUTPUT_UNIT, DEFAULT_OUTPUT_UNIT)
     )
+    for key in (CONF_ACTUAL_POWER_FACTOR, CONF_REQUEST_FACTOR):
+        normalized[key] = _float_value(normalized, key, 1.0)
+    normalized[CONF_COMMAND_ON] = str(normalized.get(CONF_COMMAND_ON, "1")).strip()
+    normalized[CONF_COMMAND_OFF] = str(normalized.get(CONF_COMMAND_OFF, "0")).strip()
 
     normalized[CONF_EVSE_PHASES] = int(
         normalized.get(CONF_EVSE_PHASES, DEFAULT_EVSE_PHASES)
@@ -209,6 +219,10 @@ def validate_load_data(data: dict[str, Any]) -> dict[str, str]:
     if values[CONF_OUTPUT_UNIT] not in OUTPUT_UNITS:
         errors[CONF_OUTPUT_UNIT] = "invalid_output_unit"
 
+    for key in (CONF_ACTUAL_POWER_FACTOR, CONF_REQUEST_FACTOR):
+        if values[key] not in INPUT_FACTORS:
+            errors[key] = "invalid_input_factor"
+
     if values[CONF_SAFE_OUTPUT_VALUE] < 0.0:
         errors[CONF_SAFE_OUTPUT_VALUE] = "safe_output_must_be_nonnegative"
 
@@ -217,13 +231,37 @@ def validate_load_data(data: dict[str, Any]) -> dict[str, str]:
 
     if values.get(CONF_OUTPUT_ENTITY):
         if load_type == LOAD_TYPE_SWITCH:
-            if output_domain not in SUPPORTED_SWITCH_DOMAINS:
+            if output_domain not in SUPPORTED_COMMAND_DOMAINS:
                 errors[CONF_OUTPUT_ENTITY] = "switch_output_required"
         elif output_domain not in SUPPORTED_NUMBER_DOMAINS:
             errors[CONF_OUTPUT_ENTITY] = "number_output_required"
 
-    if values.get(CONF_ENABLE_ENTITY) and enable_domain not in SUPPORTED_SWITCH_DOMAINS:
+    if values.get(CONF_ENABLE_ENTITY) and enable_domain not in SUPPORTED_COMMAND_DOMAINS:
         errors[CONF_ENABLE_ENTITY] = "enable_switch_required"
+
+    if values.get(CONF_ENABLE_ENTITY) and values.get(CONF_ENABLE_ENTITY) == values.get(CONF_OUTPUT_ENTITY):
+        errors[CONF_ENABLE_ENTITY] = "duplicate_output_entity"
+
+    command_domains = [enable_domain]
+    if load_type == LOAD_TYPE_SWITCH:
+        command_domains.append(output_domain)
+    if any(domain in SUPPORTED_COMMAND_DOMAINS and domain not in SUPPORTED_SWITCH_DOMAINS for domain in command_domains):
+        on, off = values[CONF_COMMAND_ON], values[CONF_COMMAND_OFF]
+        if not on or not off or on == off:
+            errors[CONF_COMMAND_ON] = "invalid_commands"
+        if any(domain in SUPPORTED_NUMBER_DOMAINS for domain in command_domains):
+            try:
+                on_number, off_number = float(on), float(off)
+                if not isfinite(on_number) or not isfinite(off_number) or on_number == off_number:
+                    raise ValueError
+            except (TypeError, ValueError):
+                errors[CONF_COMMAND_ON] = "invalid_commands"
+
+    if values[CONF_OUTPUT_UNIT] == "A" or load_type == LOAD_TYPE_EVSE:
+        if values[CONF_EVSE_PHASES] not in (1, 2, 3):
+            errors[CONF_EVSE_PHASES] = "invalid_evse_phases"
+        if values[CONF_EVSE_VOLTAGE_V] <= 0:
+            errors[CONF_EVSE_VOLTAGE_V] = "must_be_positive"
 
     if load_type == LOAD_TYPE_EVSE:
         phases = values[CONF_EVSE_PHASES]

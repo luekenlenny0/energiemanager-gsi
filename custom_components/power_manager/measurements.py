@@ -9,6 +9,7 @@ from typing import Any
 from .const import (
     BATTERY_SOC_SCALE_FRACTION,
     BATTERY_SOC_SCALE_PERCENT,
+    INPUT_FACTORS,
 )
 
 
@@ -52,6 +53,7 @@ def power_to_kw(
     unit: str | None,
     *,
     invert: bool = False,
+    factor: float = 1.0,
     label: str = "Leistung",
 ) -> float:
     """Convert a power value to kW without guessing its unit."""
@@ -73,12 +75,27 @@ def power_to_kw(
             f"{label}: Nicht unterstützte Leistungseinheit '{unit}'."
         )
 
-    result_kw = number * POWER_UNIT_TO_KW[normalized_unit]
+    result_kw = scaled_value(number, factor, label=label) * POWER_UNIT_TO_KW[normalized_unit]
+    if not isfinite(result_kw):
+        raise MeasurementError(f"{label}: Umgerechneter Wert muss endlich sein.")
 
     if invert:
         result_kw = -result_kw
 
     return result_kw
+
+
+def scaled_value(value: Any, factor: Any = 1.0, *, label: str = "Messwert") -> float:
+    """Apply an explicit input factor before the normal unit conversion."""
+
+    number = _finite_float(value, label=label)
+    multiplier = _finite_float(factor, label=f"{label} Faktor")
+    if multiplier not in INPUT_FACTORS:
+        raise MeasurementError(f"{label}: Nicht unterstützter Skalierungsfaktor.")
+    result = number * multiplier
+    if not isfinite(result):
+        raise MeasurementError(f"{label}: Skalierter Wert muss endlich sein.")
+    return result
 
 
 def percentage_value(

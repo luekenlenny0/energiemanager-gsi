@@ -24,6 +24,11 @@ from .const import (
     CONF_BATTERY_SOC_ENTITY,
     CONF_LOAD_NAME,
     CONF_LOAD_TYPE,
+    CONF_OUTPUT_UNIT,
+    CONF_COMMAND_ON,
+    CONF_COMMAND_OFF,
+    CONF_EVSE_PHASES,
+    CONF_EVSE_VOLTAGE_V,
     CONF_MAX_KW,
     CONF_MIN_KW,
     CONF_PEAK_SHAVING_ENABLED,
@@ -152,6 +157,16 @@ SENSORS: tuple[PowerManagerSensorDescription, ...] = (
         key="base_load",
         translation_key="base_load",
         value_fn=_result_value("base_load_kw"),
+        **POWER_SENSOR_OPTIONS,
+    ),
+    PowerManagerSensorDescription(
+        key="house_power", translation_key="house_power",
+        value_fn=lambda data: data.house_balance.house_kw if data.house_balance else None,
+        **POWER_SENSOR_OPTIONS,
+    ),
+    PowerManagerSensorDescription(
+        key="house_base_power", translation_key="house_base_power",
+        value_fn=lambda data: data.house_balance.base_kw if data.house_balance else None,
         **POWER_SENSOR_OPTIONS,
     ),
     PowerManagerSensorDescription(
@@ -308,6 +323,19 @@ class PowerManagerSensor(
             return None
         return self.entity_description.value_fn(data)
 
+    @property
+    def extra_state_attributes(self) -> dict[str, StateType]:
+        data = self.coordinator.data
+        if data is None or self.entity_description.key not in ("house_power", "house_base_power"):
+            return {}
+        balance = data.house_balance
+        return {
+            "source": balance.source if balance else None,
+            "estimated": balance.estimated if balance else None,
+            "raw_base_kw": balance.raw_base_kw if balance else None,
+            "balance_error": data.balance_error,
+        }
+
 
 class PowerManagerLoadTargetSensor(
     CoordinatorEntity[PowerManagerCoordinator],
@@ -368,7 +396,16 @@ class PowerManagerLoadTargetSensor(
 
         return {
             "load_name": load.name,
+            "manual_mode": self.coordinator.manual_control(self._subentry_id).mode,
+            "manual_power_kw": self.coordinator.manual_control(self._subentry_id).power_kw,
             "load_type": str(data.get(CONF_LOAD_TYPE, load.load_type)),
+            "output_unit": str(data.get(CONF_OUTPUT_UNIT, "auto")),
+            "command_on": str(data.get(CONF_COMMAND_ON, "1")),
+            "command_off": str(data.get(CONF_COMMAND_OFF, "0")),
+            "safe_output_value": float(data.get("safe_output_value", 0)),
+            "pause_current_a": float(data.get("evse_pause_current_a", 0.01)),
+            "phases": int(data.get(CONF_EVSE_PHASES, 3)),
+            "voltage_v": float(data.get(CONF_EVSE_VOLTAGE_V, 230)),
             "priority": int(data.get(CONF_PRIORITY, DEFAULT_PRIORITY)),
             "min_kw": float(data.get(CONF_MIN_KW, DEFAULT_MIN_KW)),
             "max_kw": float(data.get(CONF_MAX_KW, DEFAULT_MAX_KW)),

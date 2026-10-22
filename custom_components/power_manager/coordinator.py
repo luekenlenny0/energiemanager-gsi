@@ -32,6 +32,12 @@ from .actuator import (
 )
 from .allocator import EPSILON
 from .const import (
+    CONF_HOUSE_POWER_ENTITY,
+    CONF_GRID_POWER_FACTOR,
+    CONF_BATTERY_SOC_FACTOR,
+    CONF_ACTUAL_POWER_FACTOR,
+    CONF_REQUEST_FACTOR,
+    CONF_SURPLUS_STRATEGY,
     CONF_ACTUAL_POWER_ENTITY,
     CONF_ACTUAL_SENSOR_TIMEOUT_S,
     CONF_AVAILABILITY_ENTITY,
@@ -92,12 +98,15 @@ from .load_adapter import (
     requested_kw_from_source,
 )
 from .load_config import normalize_load_data
+from .manual import ManualControl, MANUAL_MODES, manual_requested_kw, validate_manual_power
+from .balance import HouseBalance, calculate_house_balance
 from .measurements import (
     MeasurementError,
     measurement_age_seconds,
     measurement_is_fresh,
     percentage_from_scale,
     power_to_kw,
+    scaled_value,
 )
 from .models import (
     ControllableLoad,
@@ -125,7 +134,7 @@ class LoadDiagnostic:
     commanded_target_kw: float | None = None
     output_entity: str | None = None
     enable_entity: str | None = None
-    command_value: float | None = None
+    command_value: float | str | None = None
     command_unit: str | None = None
     command_enabled: bool | None = None
     input_error: str | None = None
@@ -148,6 +157,8 @@ class PowerManagerCoordinatorData:
     output_healthy: bool
     last_output_error: str | None
     loads: dict[str, LoadDiagnostic]
+    house_balance: HouseBalance | None = None
+    balance_error: str | None = None
 
 
 class PowerManagerCoordinator(DataUpdateCoordinator[PowerManagerCoordinatorData]):
@@ -178,6 +189,7 @@ class PowerManagerCoordinator(DataUpdateCoordinator[PowerManagerCoordinatorData]
         self.live_control_enabled = False
         self._tracking_started = False
         self._last_output_error: str | None = None
+        self.manual_controls: dict[str, ManualControl] = {}
 
     @property
     def settings(self) -> dict[str, Any]:
@@ -203,6 +215,7 @@ class PowerManagerCoordinator(DataUpdateCoordinator[PowerManagerCoordinatorData]
         values = self.settings
         entity_ids: list[str | None] = [
             values.get(CONF_GRID_POWER_ENTITY),
+            values.get(CONF_HOUSE_POWER_ENTITY),
             values.get(CONF_PV_POWER_ENTITY),
             values.get(CONF_BATTERY_POWER_ENTITY),
             values.get(CONF_BATTERY_SOC_ENTITY),
@@ -319,6 +332,7 @@ class PowerManagerCoordinator(DataUpdateCoordinator[PowerManagerCoordinatorData]
                 raw_value,
                 unit,
                 invert=bool(values.get(CONF_INVERT_GRID_POWER, False)),
+                factor=values.get(CONF_GRID_POWER_FACTOR, 1.0),
                 label="Netzleistung",
             )
             timeout_s = self._grid_timeout_s()
@@ -348,11 +362,15 @@ class PowerManagerCoordinator(DataUpdateCoordinator[PowerManagerCoordinatorData]
             return 0.0
 
         state = self._get_state(entity_id, label=label)
+        age_s = measurement_age_seconds(state.last_reported, datetime.now(timezone.utc))
+        if not measurement_is_fresh(age_s, self._grid_timeout_s()):
+            raise MeasurementError(f"{label}: Messwert ist {age_s:.1f} s alt.")
         raw_value, unit = self._state_value_and_unit(state, label=label)
         return power_to_kw(
             raw_value,
             unit,
             invert=bool(values.get(invert_key, False)),
+            factor=values.get(entity_key.replace("_entity", "_factor"), 1.0),
             label=label,
         )
 
@@ -367,7 +385,7 @@ class PowerManagerCoordinator(DataUpdateCoordinator[PowerManagerCoordinatorData]
         state = self._get_state(entity_id, label="Batterie-SOC")
         raw_value, unit = self._state_value_and_unit(state, label="Batterie-SOC")
         return percentage_from_scale(
-            raw_value,
+            scaled_value(raw_value, values.get(CONF_BATTERY_SOC_FACTOR, 1.0), label="Batterie-SOC"),
             unit,
             scale=str(values.get(CONF_BATTERY_SOC_SCALE, DEFAULT_BATTERY_SOC_SCALE)),
             label="Batterie-SOC",
@@ -432,7 +450,8 @@ class PowerManagerCoordinator(DataUpdateCoordinator[PowerManagerCoordinatorData]
                     input_errors.append(str(err))
 
             requested_kw = 0.0
-            request_entity = data.get(CONF_REQUEST_ENTITY)
+            control = self.manual_control(subentry_id)
+            request_entity = data.get(CONF_REQUEST_ENTITY) if control.mode == "auto" else None
             try:
                 raw_request, request_unit = self._read_optional_source_state(
                     str(request_entity) if request_entity else None,
@@ -446,6 +465,7 @@ class PowerManagerCoordinator(DataUpdateCoordinator[PowerManagerCoordinatorData]
                     default_request_kw_value=float(
                         data.get(CONF_DEFAULT_REQUEST_KW, DEFAULT_DEFAULT_REQUEST_KW)
                     ),
+                    factor=data.get(CONF_REQUEST_FACTOR, 1.0),
                 )
             except MeasurementError as err:
                 # Unknown demand must never cause a load to be turned on.
@@ -484,6 +504,7 @@ class PowerManagerCoordinator(DataUpdateCoordinator[PowerManagerCoordinatorData]
                     actual_kw = actual_kw_from_source(
                         raw_actual,
                         actual_unit,
+                        factor=data.get(CONF_ACTUAL_POWER_FACTOR, 1.0),
                         invert=bool(
                             data.get(
                                 CONF_INVERT_ACTUAL_POWER,
@@ -496,6 +517,11 @@ class PowerManagerCoordinator(DataUpdateCoordinator[PowerManagerCoordinatorData]
                     # explicit previous-target estimate, so never keep using it.
                     actual_kw = None
                     input_errors.append(str(err))
+
+            # Manual changes replace demand only. Availability, priorities,
+            # technical limits, PMAX and the surplus budget remain enforced.
+            control = self.manual_control(subentry_id)
+            requested_kw = manual_requested_kw(requested_kw, control)
 
             load = ControllableLoad(
                 name=name,
@@ -728,6 +754,7 @@ class PowerManagerCoordinator(DataUpdateCoordinator[PowerManagerCoordinatorData]
         assert grid_kw is not None
         values = self.settings
 
+        balance_sources_valid = True
         try:
             pv_kw = self._read_optional_power_kw(
                 entity_key=CONF_PV_POWER_ENTITY,
@@ -737,6 +764,7 @@ class PowerManagerCoordinator(DataUpdateCoordinator[PowerManagerCoordinatorData]
         except MeasurementError as err:
             _LOGGER.warning("PV-Messwert ungültig; verwende 0 kW: %s", err)
             pv_kw = 0.0
+            balance_sources_valid = False
 
         try:
             battery_kw = self._read_optional_power_kw(
@@ -758,6 +786,7 @@ class PowerManagerCoordinator(DataUpdateCoordinator[PowerManagerCoordinatorData]
                 err,
             )
             battery_kw = 0.0
+            balance_sources_valid = False
 
         try:
             battery_soc = self._read_battery_soc()
@@ -787,6 +816,7 @@ class PowerManagerCoordinator(DataUpdateCoordinator[PowerManagerCoordinatorData]
             and surplus_min_battery_soc is not None
             and battery_soc is not None
             and battery_soc <= surplus_min_battery_soc
+            and values.get(CONF_SURPLUS_STRATEGY, "pv_budget") == "pv_budget"
         ):
             _LOGGER.info(
                 "Batterie-SOC %.1f %% hat die Überschussreserve %.1f %% erreicht; "
@@ -807,6 +837,7 @@ class PowerManagerCoordinator(DataUpdateCoordinator[PowerManagerCoordinatorData]
                 mode=self.operating_mode,
                 now_s=monotonic(),
                 surplus_min_battery_soc=surplus_min_battery_soc,
+                surplus_strategy=str(values.get(CONF_SURPLUS_STRATEGY, "pv_budget")),
             )
 
             result = run_controller(
@@ -824,6 +855,16 @@ class PowerManagerCoordinator(DataUpdateCoordinator[PowerManagerCoordinatorData]
             )
 
         self._set_calculated_targets(diagnostics, result)
+
+        # Use measured power, or a previous physical command when no sensor
+        # exists. Dry-run target changes are not real household consumption.
+        balance_consumer_kw = 0.0
+        for subentry_id, diagnostic in diagnostics.items():
+            previous = self.data.loads.get(subentry_id) if self.data else None
+            balance_consumer_kw += (
+                diagnostic.actual_kw if diagnostic.actual_kw is not None
+                else ((previous.commanded_target_kw or 0.0) if previous else 0.0)
+            )
 
         output_error: str | None = None
         if self.live_control_enabled:
@@ -865,6 +906,28 @@ class PowerManagerCoordinator(DataUpdateCoordinator[PowerManagerCoordinatorData]
         self.controller_state = result.state
         self._last_output_error = None
 
+        balance = None
+        balance_error = None
+        try:
+            house_meter_kw = None
+            if values.get(CONF_HOUSE_POWER_ENTITY):
+                house_meter_kw = self._read_optional_power_kw(
+                    entity_key=CONF_HOUSE_POWER_ENTITY,
+                    invert_key="invert_house_power", label="Hausverbrauchszähler",
+                )
+            elif not balance_sources_valid:
+                raise MeasurementError("Hausbilanz kann wegen ungültiger PV-/Speichermessung nicht berechnet werden.")
+            balance = calculate_house_balance(
+                grid_kw=grid_kw, pv_kw=pv_kw, battery_kw=battery_kw,
+                consumer_kw=balance_consumer_kw,
+                house_meter_kw=house_meter_kw,
+                consumer_estimated=any(load.actual_kw is None for load in loads),
+            )
+            if balance.raw_base_kw < -0.05:
+                balance_error = "Verbrauchersumme liegt über dem Hausverbrauch. Messwerte und Faktoren prüfen."
+        except (MeasurementError, ValueError) as err:
+            balance_error = str(err)
+
         return PowerManagerCoordinatorData(
             inputs=inputs,
             result=result,
@@ -878,7 +941,34 @@ class PowerManagerCoordinator(DataUpdateCoordinator[PowerManagerCoordinatorData]
             output_healthy=True,
             last_output_error=None,
             loads=diagnostics,
+            house_balance=balance,
+            balance_error=balance_error,
         )
+
+    def manual_control(self, subentry_id: str) -> ManualControl:
+        """Return runtime override with a configured default demand."""
+
+        if subentry_id not in self.manual_controls:
+            subentry = self.config_entry.subentries[subentry_id]
+            data = normalize_load_data(dict(subentry.data))
+            power = float(data.get(CONF_DEFAULT_REQUEST_KW, 0)) or float(data[CONF_MAX_KW])
+            self.manual_controls[subentry_id] = ManualControl(power_kw=power)
+        return self.manual_controls[subentry_id]
+
+    async def async_set_manual_mode(self, subentry_id: str, mode: str) -> None:
+        if mode not in MANUAL_MODES:
+            raise HomeAssistantError("Unbekannte manuelle Betriebsart.")
+        self.manual_control(subentry_id).mode = mode
+        await self.async_request_refresh()
+
+    async def async_set_manual_power(self, subentry_id: str, value: float) -> None:
+        data = normalize_load_data(dict(self.config_entry.subentries[subentry_id].data))
+        try:
+            power = validate_manual_power(value, min_kw=float(data[CONF_MIN_KW]), max_kw=float(data[CONF_MAX_KW]))
+        except (TypeError, ValueError) as err:
+            raise HomeAssistantError(str(err)) from err
+        self.manual_control(subentry_id).power_kw = power
+        await self.async_request_refresh()
 
     async def async_enable_live_control(self) -> None:
         """Validate every actuator, arm live control and immediately recalculate."""
@@ -900,8 +990,15 @@ class PowerManagerCoordinator(DataUpdateCoordinator[PowerManagerCoordinatorData]
             raise HomeAssistantError("Es ist noch kein regelbarer Verbraucher konfiguriert.")
 
         errors: list[str] = []
+        used_outputs: set[str] = set()
         for _subentry_id, load_data in load_subentries:
             try:
+                for key in (CONF_OUTPUT_ENTITY, CONF_ENABLE_ENTITY):
+                    entity_id = load_data.get(key)
+                    if entity_id:
+                        if entity_id in used_outputs:
+                            raise ActuatorError(f"Ausgang '{entity_id}' wurde mehrfach zugeordnet.")
+                        used_outputs.add(entity_id)
                 validate_actuator(self.hass, load_data)
             except ActuatorError as err:
                 errors.append(f"{load_data.get(CONF_LOAD_NAME, 'Verbraucher')}: {err}")

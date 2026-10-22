@@ -660,11 +660,11 @@ def run_controller(
     # 3. Basislast
     # ------------------------------------------------------
 
-    if (
-        inputs.mode
-        == OperatingMode.SURPLUS
-    ):
-        # Im Überschussbetrieb wird die aktuelle
+    if inputs.surplus_strategy not in ("net_export", "pv_budget"):
+        raise ValueError("Unbekannte Überschussstrategie")
+
+    if inputs.mode == OperatingMode.SURPLUS and inputs.surplus_strategy == "pv_budget":
+        # Im bisherigen PV-Budget-Betrieb wird die aktuelle
         # Batterieleistung aus der Basislast herausgerechnet.
         #
         # battery_kw:
@@ -780,6 +780,13 @@ def run_controller(
             0.0,
             inputs.pv_kw,
         )
+        if inputs.surplus_strategy == "net_export":
+            # Add existing controlled demand back to measured export to avoid
+            # oscillating on/off. Preserve battery charging and exclude discharge.
+            raw_surplus_budget_kw = max(
+                0.0,
+                controlled_power_for_calculation_kw - inputs.grid_kw - battery_discharge_kw,
+            )
 
         battery_soc_blocking_surplus = bool(
             battery_soc_gate_enabled

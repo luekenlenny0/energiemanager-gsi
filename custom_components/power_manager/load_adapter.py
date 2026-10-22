@@ -40,6 +40,7 @@ def requested_kw_from_source(
     load_type: str,
     max_kw: float,
     default_request_kw_value: float,
+    factor: float = 1.0,
 ) -> float:
     """Convert an optional request source to a power request in kW."""
 
@@ -55,7 +56,7 @@ def requested_kw_from_source(
             "Anforderungswert ist weder ein boolescher Zustand noch eine Leistung mit Einheit."
         )
 
-    requested_kw = power_to_kw(value, unit, label="Anforderungsleistung")
+    requested_kw = power_to_kw(value, unit, factor=factor, label="Anforderungsleistung")
     requested_kw = max(0.0, min(requested_kw, max_kw))
 
     # A switching load is all-or-nothing. A positive request therefore means
@@ -71,6 +72,7 @@ def actual_kw_from_source(
     unit: str | None,
     *,
     invert: bool = False,
+    factor: float = 1.0,
 ) -> float | None:
     """Convert an optional actual-power source to kW."""
 
@@ -81,6 +83,7 @@ def actual_kw_from_source(
         value,
         unit,
         invert=invert,
+        factor=factor,
         label="Istleistung",
     )
     if actual_kw < 0.0:

@@ -78,6 +78,7 @@ async def async_setup_entry(
             Platform.BINARY_SENSOR,
             Platform.SELECT,
             Platform.SWITCH,
+            Platform.NUMBER,
         ],
     )
 
@@ -112,6 +113,7 @@ async def async_unload_entry(
             Platform.BINARY_SENSOR,
             Platform.SELECT,
             Platform.SWITCH,
+            Platform.NUMBER,
         ],
     )
 

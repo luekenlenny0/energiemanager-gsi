@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from math import isfinite
 from typing import Any
 
 import probatio
@@ -29,6 +30,19 @@ from homeassistant.helpers.selector import (
 )
 
 from .const import (
+    CONF_HOUSE_POWER_ENTITY,
+    CONF_HOUSE_POWER_FACTOR,
+    CONF_GRID_POWER_FACTOR,
+    CONF_PV_POWER_FACTOR,
+    CONF_BATTERY_POWER_FACTOR,
+    CONF_BATTERY_SOC_FACTOR,
+    CONF_ACTUAL_POWER_FACTOR,
+    CONF_REQUEST_FACTOR,
+    CONF_COMMAND_ON,
+    CONF_COMMAND_OFF,
+    CONF_SURPLUS_STRATEGY,
+    INPUT_FACTORS,
+    SURPLUS_STRATEGIES,
     BATTERY_SOC_SCALES,
     CONF_ACTUAL_POWER_ENTITY,
     CONF_ACTUAL_SENSOR_TIMEOUT_S,
@@ -168,6 +182,23 @@ def _seconds_selector() -> NumberSelector:
     )
 
 
+def _factor_selector() -> SelectSelector:
+    return SelectSelector(SelectSelectorConfig(options=[
+        SelectOptionDict(value=f"{factor:g}", label=f"{factor:g}".replace(".", ","))
+        for factor in INPUT_FACTORS
+    ]))
+
+
+def _factor_marker(key: str, values: dict[str, Any]) -> probatio.Required:
+    try:
+        factor = float(values.get(key, 1))
+    except (TypeError, ValueError):
+        factor = 1.0
+    if factor not in INPUT_FACTORS:
+        factor = 1.0
+    return probatio.Required(key, default=f"{factor:g}")
+
+
 def _entity_selector(*, domain: str | list[str] | None = None) -> EntitySelector:
     """Build a single-entity selector without serializing a null domain filter."""
 
@@ -187,6 +218,12 @@ def _build_global_schema(values: dict[str, Any] | None = None) -> probatio.Schem
         {
             _required_entity_marker(CONF_GRID_POWER_ENTITY, values): _entity_selector(
                 domain=Platform.SENSOR
+            ),
+            _factor_marker(CONF_GRID_POWER_FACTOR, values): _factor_selector(),
+            _optional_marker(CONF_HOUSE_POWER_ENTITY, values): _entity_selector(domain=Platform.SENSOR),
+            _factor_marker(CONF_HOUSE_POWER_FACTOR, values): _factor_selector(),
+            _required_marker(CONF_SURPLUS_STRATEGY, values, "pv_budget" if values.get(CONF_GRID_POWER_ENTITY) else "net_export"): SelectSelector(
+                SelectSelectorConfig(options=list(SURPLUS_STRATEGIES), translation_key=CONF_SURPLUS_STRATEGY)
             ),
             _required_marker(CONF_GRID_LIMIT_KW, values, 1.0): _power_number_selector(
                 minimum=0.1
@@ -216,6 +253,7 @@ def _build_global_schema(values: dict[str, Any] | None = None) -> probatio.Schem
             _optional_marker(CONF_PV_POWER_ENTITY, values): _entity_selector(
                 domain=Platform.SENSOR
             ),
+            _factor_marker(CONF_PV_POWER_FACTOR, values): _factor_selector(),
             _required_marker(
                 CONF_INVERT_PV_POWER,
                 values,
@@ -224,6 +262,7 @@ def _build_global_schema(values: dict[str, Any] | None = None) -> probatio.Schem
             _optional_marker(CONF_BATTERY_POWER_ENTITY, values): _entity_selector(
                 domain=Platform.SENSOR
             ),
+            _factor_marker(CONF_BATTERY_POWER_FACTOR, values): _factor_selector(),
             _required_marker(
                 CONF_INVERT_BATTERY_POWER,
                 values,
@@ -232,6 +271,7 @@ def _build_global_schema(values: dict[str, Any] | None = None) -> probatio.Schem
             _optional_marker(CONF_BATTERY_SOC_ENTITY, values): _entity_selector(
                 domain=Platform.SENSOR
             ),
+            _factor_marker(CONF_BATTERY_SOC_FACTOR, values): _factor_selector(),
             _required_marker(
                 CONF_BATTERY_SOC_SCALE,
                 values,
@@ -256,8 +296,11 @@ def _normalize_global_configuration(user_input: dict[str, Any]) -> dict[str, Any
     """Return a complete global mapping so options can also clear old values."""
 
     normalized = dict(user_input)
+    for key in (CONF_GRID_POWER_FACTOR, CONF_PV_POWER_FACTOR, CONF_BATTERY_POWER_FACTOR, CONF_BATTERY_SOC_FACTOR, CONF_HOUSE_POWER_FACTOR):
+        normalized[key] = float(normalized.get(key, 1))
     for key in (
         CONF_PV_POWER_ENTITY,
+        CONF_HOUSE_POWER_ENTITY,
         CONF_BATTERY_POWER_ENTITY,
         CONF_BATTERY_SOC_ENTITY,
         CONF_SURPLUS_MIN_BATTERY_SOC,
@@ -281,6 +324,17 @@ def _validate_global_configuration(user_input: dict[str, Any]) -> dict[str, str]
     if grid_limit_kw <= 0.0:
         errors[CONF_GRID_LIMIT_KW] = "grid_limit_must_be_positive"
 
+    if not all(isfinite(v) for v in (grid_limit_kw, grid_reserve_kw, grid_sensor_timeout_s)):
+        return {"base": "invalid_number"}
+    for key in (CONF_GRID_POWER_FACTOR, CONF_PV_POWER_FACTOR, CONF_BATTERY_POWER_FACTOR, CONF_BATTERY_SOC_FACTOR, CONF_HOUSE_POWER_FACTOR):
+        try:
+            if float(user_input.get(key, 1)) not in INPUT_FACTORS:
+                raise ValueError
+        except (TypeError, ValueError):
+            errors[key] = "invalid_input_factor"
+    if user_input.get(CONF_SURPLUS_STRATEGY, "net_export") not in SURPLUS_STRATEGIES:
+        errors[CONF_SURPLUS_STRATEGY] = "invalid_surplus_strategy"
+
     if grid_reserve_kw < 0.0 or grid_reserve_kw >= grid_limit_kw:
         errors[CONF_GRID_RESERVE_KW] = "reserve_must_be_below_grid_limit"
 
@@ -295,6 +349,7 @@ def _validate_global_configuration(user_input: dict[str, Any]) -> dict[str, str]
 
     selected_entities = [
         user_input.get(CONF_GRID_POWER_ENTITY),
+        user_input.get(CONF_HOUSE_POWER_ENTITY),
         user_input.get(CONF_PV_POWER_ENTITY),
         user_input.get(CONF_BATTERY_POWER_ENTITY),
         user_input.get(CONF_BATTERY_SOC_ENTITY),
@@ -337,6 +392,7 @@ def _build_load_schema(values: dict[str, Any] | None = None) -> probatio.Schema:
             _optional_marker(CONF_ACTUAL_POWER_ENTITY, values): _entity_selector(
                 domain=Platform.SENSOR
             ),
+            _factor_marker(CONF_ACTUAL_POWER_FACTOR, values): _factor_selector(),
             _required_marker(
                 CONF_ACTUAL_SENSOR_TIMEOUT_S,
                 values,
@@ -355,11 +411,14 @@ def _build_load_schema(values: dict[str, Any] | None = None) -> probatio.Schema:
                 DEFAULT_INVERT_ACTUAL_POWER,
             ): BooleanSelector(),
             _optional_marker(CONF_REQUEST_ENTITY, values): _entity_selector(),
+            _factor_marker(CONF_REQUEST_FACTOR, values): _factor_selector(),
             _optional_marker(CONF_AVAILABILITY_ENTITY, values): _entity_selector(),
             _optional_marker(CONF_OUTPUT_ENTITY, values): _entity_selector(),
             _optional_marker(CONF_ENABLE_ENTITY, values): _entity_selector(
-                domain=["switch", "input_boolean"]
+                domain=["switch", "input_boolean", "number", "input_number", "select", "input_select"]
             ),
+            _required_marker(CONF_COMMAND_ON, values, "1"): str,
+            _required_marker(CONF_COMMAND_OFF, values, "0"): str,
             _required_marker(CONF_OUTPUT_UNIT, values, DEFAULT_OUTPUT_UNIT): SelectSelector(
                 SelectSelectorConfig(
                     options=[SelectOptionDict(value=unit, label=unit) for unit in OUTPUT_UNITS]
@@ -597,6 +656,14 @@ class PowerManagerLoadSubentryFlow(ConfigSubentryFlow):
             exclude_subentry_id=exclude_subentry_id,
         ):
             errors[CONF_LOAD_NAME] = "duplicate_load_name"
+
+        for subentry_id, subentry in self._get_entry().subentries.items():
+            if subentry_id == exclude_subentry_id or subentry.subentry_type != SUBENTRY_TYPE_LOAD:
+                continue
+            used = {subentry.data.get(CONF_OUTPUT_ENTITY), subentry.data.get(CONF_ENABLE_ENTITY)} - {None, ""}
+            for key in (CONF_OUTPUT_ENTITY, CONF_ENABLE_ENTITY):
+                if normalized.get(key) and normalized[key] in used:
+                    errors[key] = "duplicate_output_entity"
 
         return normalized, errors
 
